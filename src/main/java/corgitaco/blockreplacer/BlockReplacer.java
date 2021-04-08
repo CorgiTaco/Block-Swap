@@ -48,9 +48,9 @@ public class BlockReplacer {
 
     public static void handleBlockBlockConfig() {
         HashMap<String, String> blockBlockMap = new HashMap<>();
-        blockBlockMap.put("dummyblocktoreplace", "replacer");
-        blockBlockMap.put("dummyblocktoreplace2", "replacer2");
-        blockBlockMap.put("dummyblocktoreplace3", "replacer3");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace", "replacer");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace2", "replacer2");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace3", "replacer3");
 
         BlockReplacer.handleBlockBlockConfig(CONFIG_PATH.resolve("block_replacer.json"), blockBlockMap);
     }
