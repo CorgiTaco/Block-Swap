@@ -96,37 +96,44 @@ public class BlockSwap {
             if (blockDataListHolder != null) {
                 Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap = new Reference2ReferenceOpenHashMap<>();
                 Reference2ReferenceOpenHashMap<Block, Block> reversedBlockBlockMap = new Reference2ReferenceOpenHashMap<>();
-                blockDataListHolder.forEach((key, value) -> {
-                    Block oldBlock = Registry.BLOCK.get(new ResourceLocation(key));
-                    Block newBlock = Registry.BLOCK.get(new ResourceLocation(value));
+                for (Map.Entry<String, String> entry : blockDataListHolder.entrySet()) {
+                    String key = entry.getKey();
+                    String value = entry.getValue();
 
+                    ResourceLocation keyLocation = new ResourceLocation(key);
+                    ResourceLocation valueLocation = new ResourceLocation(value);
 
-                    boolean oldBlockPassed = oldBlock != null || oldBlock != Blocks.AIR;
-                    boolean newBlockPassed = oldBlock != null || oldBlock != Blocks.AIR;
+                    boolean containsKey = Registry.BLOCK.keySet().contains(keyLocation);
+                    boolean containsValue = Registry.BLOCK.keySet().contains(valueLocation);
+
+                    if (!containsKey || !containsValue) {
+                        if (!containsKey) {
+                            LOGGER.error("Key: " + key + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". . Skipping entry...");
+                        }
+                        if (!containsValue) {
+                            LOGGER.error("Value: " + value + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". Skipping entry...");
+                        }
+                        continue;
+                    }
+
+                    Block oldBlock = Registry.BLOCK.get(keyLocation);
+                    Block newBlock = Registry.BLOCK.get(valueLocation);
 
                     if (oldBlock != newBlock) {
-                        if (oldBlockPassed || newBlockPassed) {
-                            blockBlockMap.put(oldBlock, newBlock);
-                            reversedBlockBlockMap.put(newBlock, oldBlock);
+                        blockBlockMap.put(oldBlock, newBlock);
+                        reversedBlockBlockMap.put(newBlock, oldBlock);
 
-                            if ((reversedBlockBlockMap.containsKey(oldBlock) && blockBlockMap.containsValue(oldBlock))) {
-                                LOGGER.error("Circular reference found for entry: \"" + key + "\":\"" + value + "\". Removing this entry...");
-                                blockBlockMap.remove(oldBlock);
-                                reversedBlockBlockMap.remove(newBlock);
-                            }
-
-                        } else {
-                            if (oldBlockPassed)
-                                LOGGER.error(key + " is not a block in the block registry.");
-                            if (newBlockPassed)
-                                LOGGER.error(value + " is not a block in the block registry.");
+                        if ((reversedBlockBlockMap.containsKey(oldBlock) && blockBlockMap.containsValue(oldBlock))) {
+                            LOGGER.error("Circular reference found for entry: \"" + key + "\":\"" + value + "\". Removing this entry...");
+                            blockBlockMap.remove(oldBlock);
+                            reversedBlockBlockMap.remove(newBlock);
                         }
+
                     } else {
                         LOGGER.error(key + " should not equal " + value);
                     }
-                });
+                }
 
-                blockBlockMap.remove(Blocks.AIR, Blocks.AIR);
                 BlockSwap.blockToBlockMap = blockBlockMap;
             } else
                 LOGGER.error(CONFIG_FILE.getAbsolutePath() + " could not be read!");
