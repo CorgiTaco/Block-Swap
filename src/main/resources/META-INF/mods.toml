@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "[33,)"
-license = "MIT"
+license = "LGPLv3"
 issueTrackerURL = "https://github.com/CorgiTaco/Block-Swap/issues"
 [[mods]]
 modId = "blockswap"
