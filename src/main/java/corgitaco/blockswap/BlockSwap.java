@@ -39,9 +39,6 @@ public class BlockSwap {
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
     public BlockSwap() {
-        File dir = new File(CONFIG_PATH.toString());
-        if (!dir.exists())
-            dir.mkdirs();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
     }
 
@@ -65,37 +62,40 @@ public class BlockSwap {
     public static BlockState remapState(BlockState incomingState) {
         Block block = BlockSwap.blockToBlockMap.get(incomingState.getBlock());
 
-        final BlockState[] newState = {block.defaultBlockState()};
+        BlockState newState = block.defaultBlockState();
 
-        Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState[0].getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(),
-                (set) -> newState[0].getProperties().parallelStream().forEach(property -> set.put(property.generateHashCode(), property))));
-
-        incomingState.getProperties().parallelStream().map(Property::generateHashCode).map(value -> newStateProperties.get((int) value)).forEach((property1) -> {
-            if (property1 != null) {
-                newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
+        BlockState finalNewState = newState;
+        Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState.getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(), (set) -> {
+            for (Property<?> property : finalNewState.getProperties()) {
+                set.put(property.generateHashCode(), property);
             }
-        });
+        }));
 
-        return newState[0];
+        for (Property<?> property : incomingState.getProperties()) {
+            Property newProperty = newStateProperties.get(property.generateHashCode());
+            if (newProperty != null) {
+                newState = newState.setValue(newProperty, incomingState.getValue(newProperty));
+            }
+        }
+
+        return newState;
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions", "unchecked", "deprecation"})
     public static void handleBlockBlockConfig(Path path, Map<String, String> defaultBlockBlockMap) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setPrettyPrinting();
-        gsonBuilder.disableHtmlEscaping();
-        Gson gson = gsonBuilder.create();
+        Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().setLenient().create();
         Map<String, String> sortedMap = new TreeMap<>(Comparator.comparing(String::toString));
         sortedMap.putAll(defaultBlockBlockMap);
         final File CONFIG_FILE = new File(String.valueOf(path));
 
         if (!CONFIG_FILE.exists()) {
-            createRiverJson(path, sortedMap);
+            createBlockBlockConfig(path, sortedMap, gson);
         }
         try (Reader reader = new FileReader(path.toString())) {
             Map<String, String> blockDataListHolder = gson.fromJson(reader, Map.class);
             if (blockDataListHolder != null) {
                 Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap = new Reference2ReferenceOpenHashMap<>();
+                Reference2ReferenceOpenHashMap<Block, Block> reversedBlockBlockMap = new Reference2ReferenceOpenHashMap<>();
                 blockDataListHolder.forEach((key, value) -> {
                     Block oldBlock = Registry.BLOCK.get(new ResourceLocation(key));
                     Block newBlock = Registry.BLOCK.get(new ResourceLocation(value));
@@ -107,6 +107,14 @@ public class BlockSwap {
                     if (oldBlock != newBlock) {
                         if (oldBlockPassed || newBlockPassed) {
                             blockBlockMap.put(oldBlock, newBlock);
+                            reversedBlockBlockMap.put(newBlock, oldBlock);
+
+                            if ((reversedBlockBlockMap.containsKey(oldBlock) && blockBlockMap.containsValue(oldBlock))) {
+                                LOGGER.error("Circular reference found for entry: \"" + key + "\":\"" + value + "\". Removing this entry...");
+                                blockBlockMap.remove(oldBlock);
+                                reversedBlockBlockMap.remove(newBlock);
+                            }
+
                         } else {
                             if (oldBlockPassed)
                                 LOGGER.error(key + " is not a block in the block registry.");
@@ -121,25 +129,21 @@ public class BlockSwap {
                 blockBlockMap.remove(Blocks.AIR, Blocks.AIR);
                 BlockSwap.blockToBlockMap = blockBlockMap;
             } else
-                LOGGER.error(MOD_ID + "-rivers.json could not be read");
+                LOGGER.error(CONFIG_FILE.getAbsolutePath() + " could not be read!");
 
         } catch (IOException e) {
-            LOGGER.error(MOD_ID + "-rivers.json could not be read");
+            LOGGER.error(CONFIG_FILE.getAbsolutePath() + " could not be read!");
         }
     }
 
-    public static void createRiverJson(Path path, Map<String, String> biomeRiverMap) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.setPrettyPrinting();
-        gsonBuilder.disableHtmlEscaping();
-        Gson gson = gsonBuilder.create();
-
+    public static void createBlockBlockConfig(Path path, Map<String, String> biomeRiverMap, Gson gson) {
         String jsonString = gson.toJson(biomeRiverMap);
 
         try {
+            Files.createDirectories(path.getParent());
             Files.write(path, jsonString.getBytes());
         } catch (IOException e) {
-            LOGGER.error(MOD_ID + "-rivers.json could not be created");
+            LOGGER.error(path.toString() + " could not be created!");
         }
     }
 }
