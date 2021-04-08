@@ -71,7 +71,9 @@ public class BlockSwap {
                 (set) -> newState[0].getProperties().parallelStream().forEach(property -> set.put(property.generateHashCode(), property))));
 
         incomingState.getProperties().parallelStream().map(Property::generateHashCode).map(value -> newStateProperties.get((int) value)).forEach((property1) -> {
-            newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
+            if (property1 != null) {
+                newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
+            }
         });
 
         return newState[0];
