@@ -1,7 +1,7 @@
 modLoader = "javafml"
 loaderVersion = "[33,)"
 license = "MIT"
-issueTrackerURL = "https://github.com/CorgiTaco/Block/issues"
+issueTrackerURL = "https://github.com/CorgiTaco/Block-Replacer/issues"
 [[mods]]
 modId = "blockreplacer"
 version = "1.0.0"
