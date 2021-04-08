@@ -70,7 +70,7 @@ public class BlockSwap {
         Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState[0].getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(),
                 (set) -> newState[0].getProperties().parallelStream().forEach(property -> set.put(property.generateHashCode(), property))));
 
-        incomingState.getProperties().parallelStream().map(Property::generateHashCode).map(newStateProperties::get).forEach((property1) -> {
+        incomingState.getProperties().parallelStream().map(Property::generateHashCode).map(value -> newStateProperties.get((int) value)).forEach((property1) -> {
             newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
         });
 
