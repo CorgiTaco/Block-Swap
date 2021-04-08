@@ -1,6 +1,6 @@
-package corgitaco.blockreplacer.mixin;
+package corgitaco.blockswap.mixin;
 
-import corgitaco.blockreplacer.BlockReplacer;
+import corgitaco.blockswap.BlockSwap;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,8 +18,8 @@ public abstract class MixinWorld {
 
     @Inject(method = "setBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("INVOKE"), cancellable = true)
     private void isIncompatibleBlock(BlockPos pos, BlockState state, int i, int flags, CallbackInfoReturnable<Boolean> cir) {
-        if (BlockReplacer.blockToBlockMap.containsKey(state.getBlock())) {
-            cir.setReturnValue(setBlock(pos, BlockReplacer.remapState(state), i, flags));
+        if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
+            cir.setReturnValue(setBlock(pos, BlockSwap.remapState(state), i, flags));
         }
     }
 }

@@ -1,9 +1,9 @@
-package corgitaco.blockreplacer.mixin;
+package corgitaco.blockswap.mixin;
 
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.datafixers.DataFixer;
-import corgitaco.blockreplacer.BlockReplacer;
+import corgitaco.blockswap.BlockSwap;
 import net.minecraft.resources.DataPackRegistries;
 import net.minecraft.resources.ResourcePackList;
 import net.minecraft.server.MinecraftServer;
@@ -24,6 +24,6 @@ public abstract class MixinMinecraftServer {
 
     @Inject(at = @At("RETURN"), method = "<init>(Ljava/lang/Thread;Lnet/minecraft/util/registry/DynamicRegistries$Impl;Lnet/minecraft/world/storage/SaveFormat$LevelSave;Lnet/minecraft/world/storage/IServerConfiguration;Lnet/minecraft/resources/ResourcePackList;Ljava/net/Proxy;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/resources/DataPackRegistries;Lcom/mojang/authlib/minecraft/MinecraftSessionService;Lcom/mojang/authlib/GameProfileRepository;Lnet/minecraft/server/management/PlayerProfileCache;Lnet/minecraft/world/chunk/listener/IChunkStatusListenerFactory;)V")
     private void loadConfig(Thread thread, DynamicRegistries.Impl impl, SaveFormat.LevelSave session, IServerConfiguration saveProperties, ResourcePackList resourcePackManager, Proxy proxy, DataFixer dataFixer, DataPackRegistries serverResourceManager, MinecraftSessionService minecraftSessionService, GameProfileRepository gameProfileRepository, PlayerProfileCache userCache, IChunkStatusListenerFactory worldGenerationProgressListenerFactory, CallbackInfo ci) {
-        BlockReplacer.handleBlockBlockConfig();
+        BlockSwap.handleBlockBlockConfig();
     }
 }

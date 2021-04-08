@@ -1,8 +1,8 @@
-package corgitaco.blockreplacer.network.packet;
+package corgitaco.blockswap.network.packet;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import corgitaco.blockreplacer.BlockReplacer;
+import corgitaco.blockswap.BlockSwap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.network.PacketBuffer;
@@ -44,7 +44,7 @@ public class ClientConfigSyncPacket {
     public static void handle(ClientConfigSyncPacket message, Supplier<NetworkEvent.Context> ctx) {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
-                BlockReplacer.blockToBlockMap = message.codec.getBlockBlockMap();
+                BlockSwap.blockToBlockMap = message.codec.getBlockBlockMap();
             });
         }
         ctx.get().setPacketHandled(true);

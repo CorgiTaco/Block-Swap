@@ -1,7 +1,7 @@
-package corgitaco.blockreplacer.network;
+package corgitaco.blockswap.network;
 
-import corgitaco.blockreplacer.BlockReplacer;
-import corgitaco.blockreplacer.network.packet.ClientConfigSyncPacket;
+import corgitaco.blockswap.BlockSwap;
+import corgitaco.blockswap.network.packet.ClientConfigSyncPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
@@ -11,7 +11,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 public class NetworkHandler {
     private static final String PROTOCOL_VERSION = "1";
     public static final SimpleChannel SIMPLE_CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(BlockReplacer.MOD_ID, "config_network"),
+            new ResourceLocation(BlockSwap.MOD_ID, "config_network"),
             () -> PROTOCOL_VERSION,
             PROTOCOL_VERSION::equals,
             PROTOCOL_VERSION::equals

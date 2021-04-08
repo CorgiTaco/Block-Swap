@@ -1,8 +1,8 @@
-package corgitaco.blockreplacer;
+package corgitaco.blockswap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import corgitaco.blockreplacer.network.NetworkHandler;
+import corgitaco.blockswap.network.NetworkHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
@@ -30,15 +30,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Mod("blockreplacer")
-public class BlockReplacer {
-    public static final String MOD_ID = "blockreplacer";
+@Mod("blockswap")
+public class BlockSwap {
+    public static final String MOD_ID = "blockswap";
 
     public static Logger LOGGER = LogManager.getLogger();
     public static Reference2ReferenceOpenHashMap<Block, Block> blockToBlockMap = new Reference2ReferenceOpenHashMap<>();
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
-    public BlockReplacer() {
+    public BlockSwap() {
         File dir = new File(CONFIG_PATH.toString());
         if (!dir.exists())
             dir.mkdirs();
@@ -52,7 +52,7 @@ public class BlockReplacer {
         blockBlockMap.put("dummymodid:dummyblocktoreplace2", "replacer2");
         blockBlockMap.put("dummymodid:dummyblocktoreplace3", "replacer3");
 
-        BlockReplacer.handleBlockBlockConfig(CONFIG_PATH.resolve("block_replacer.json"), blockBlockMap);
+        BlockSwap.handleBlockBlockConfig(CONFIG_PATH.resolve("block_swap.json"), blockBlockMap);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
@@ -63,7 +63,7 @@ public class BlockReplacer {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static BlockState remapState(BlockState incomingState) {
-        Block block = BlockReplacer.blockToBlockMap.get(incomingState.getBlock());
+        Block block = BlockSwap.blockToBlockMap.get(incomingState.getBlock());
 
         final BlockState[] newState = {block.defaultBlockState()};
 
@@ -117,7 +117,7 @@ public class BlockReplacer {
                 });
 
                 blockBlockMap.remove(Blocks.AIR, Blocks.AIR);
-                BlockReplacer.blockToBlockMap = blockBlockMap;
+                BlockSwap.blockToBlockMap = blockBlockMap;
             } else
                 LOGGER.error(MOD_ID + "-rivers.json could not be read");
 

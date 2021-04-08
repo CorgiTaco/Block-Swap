@@ -1,19 +1,19 @@
 modLoader = "javafml"
 loaderVersion = "[33,)"
 license = "MIT"
-issueTrackerURL = "https://github.com/CorgiTaco/Block-Replacer/issues"
+issueTrackerURL = "https://github.com/CorgiTaco/Block-Swap/issues"
 [[mods]]
-modId = "blockreplacer"
+modId = "blockswap"
 version = "1.0.0"
-displayName = "Block Replacer"
-displayURL = "https://www.curseforge.com/minecraft/mc-mods/block-replacer"
+displayName = "Block Swap"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/Block-Swap"
 logoFile = "icon.png"
 credits = ""
 authors = "Corgi Taco"
 description = '''
-Simply replaces one block with another
+Simply replaces one block with another.
 '''
-[[dependencies.blockreplacer]]
+[[dependencies.blockswap]]
 modId = "forge"
 mandatory = true
 versionRange = "[33.0.0,)"

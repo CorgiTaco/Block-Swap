@@ -1,8 +1,8 @@
-package corgitaco.blockreplacer.mixin;
+package corgitaco.blockswap.mixin;
 
-import corgitaco.blockreplacer.BlockReplacer;
-import corgitaco.blockreplacer.network.NetworkHandler;
-import corgitaco.blockreplacer.network.packet.ClientConfigSyncPacket;
+import corgitaco.blockswap.BlockSwap;
+import corgitaco.blockswap.network.NetworkHandler;
+import corgitaco.blockswap.network.packet.ClientConfigSyncPacket;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.world.server.ServerWorld;
@@ -16,6 +16,6 @@ public abstract class MixinPlayerList {
 
     @Inject(method = "sendLevelInfo", at = @At(value = "HEAD"))
     private void sendServerConfig(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
-        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(new ClientConfigSyncPacket.SimpleMapCodec(BlockReplacer.blockToBlockMap)));
+        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(new ClientConfigSyncPacket.SimpleMapCodec(BlockSwap.blockToBlockMap)));
     }
 }
