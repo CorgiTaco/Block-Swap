@@ -70,11 +70,8 @@ public class BlockReplacer {
         Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState[0].getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(),
                 (set) -> newState[0].getProperties().parallelStream().forEach(property -> set.put(property.generateHashCode(), property))));
 
-
         incomingState.getProperties().parallelStream().map(Property::generateHashCode).map(newStateProperties::get).forEach((property1) -> {
-            if (property1 != null) {
-                newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
-            }
+            newState[0] = newState[0].setValue((Property) property1, incomingState.getValue((Property) property1));
         });
 
         return newState[0];
