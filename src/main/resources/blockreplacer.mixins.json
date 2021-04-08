@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "corgitaco.blockreplacer.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "blockreplacer.refmap.json",
+  "mixins": [
+    "MixinChunkSection",
+    "MixinMinecraftServer",
+    "MixinPlayerList",
+    "MixinWorld"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
