@@ -147,7 +147,7 @@ public class BlockSwap {
     }
 
     public static void createBlockBlockConfig(Path path, Map<String, String> biomeRiverMap, Gson gson) {
-        String jsonString = gson.toJson(new Config(biomeRiverMap, true));
+        String jsonString = gson.toJson(new Config(biomeRiverMap, false));
 
         try {
             Files.createDirectories(path.getParent());
