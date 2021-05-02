@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -36,6 +35,7 @@ public class BlockSwap {
 
     public static Logger LOGGER = LogManager.getLogger();
     public static Reference2ReferenceOpenHashMap<Block, Block> blockToBlockMap = new Reference2ReferenceOpenHashMap<>();
+    public static boolean retroGen = false;
     public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
 
     public BlockSwap() {
@@ -45,9 +45,9 @@ public class BlockSwap {
 
     public static void handleBlockBlockConfig() {
         HashMap<String, String> blockBlockMap = new HashMap<>();
-        blockBlockMap.put("dummymodid:dummyblocktoreplace", "replacer");
-        blockBlockMap.put("dummymodid:dummyblocktoreplace2", "replacer2");
-        blockBlockMap.put("dummymodid:dummyblocktoreplace3", "replacer3");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace", "dummymodid2:replacer");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace2", "dummymodid2:replacer2");
+        blockBlockMap.put("dummymodid:dummyblocktoreplace3", "dummymodid2:replacer3");
 
         BlockSwap.handleBlockBlockConfig(CONFIG_PATH.resolve("block_swap.json"), blockBlockMap);
     }
@@ -92,49 +92,52 @@ public class BlockSwap {
             createBlockBlockConfig(path, sortedMap, gson);
         }
         try (Reader reader = new FileReader(path.toString())) {
-            Map<String, String> blockDataListHolder = gson.fromJson(reader, Map.class);
+            Config blockDataListHolder = gson.fromJson(reader, Config.class);
             if (blockDataListHolder != null) {
                 Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap = new Reference2ReferenceOpenHashMap<>();
                 Reference2ReferenceOpenHashMap<Block, Block> reversedBlockBlockMap = new Reference2ReferenceOpenHashMap<>();
-                for (Map.Entry<String, String> entry : blockDataListHolder.entrySet()) {
-                    String key = entry.getKey();
-                    String value = entry.getValue();
+                if (blockDataListHolder.getSwapper() != null) {
+                    for (Map.Entry<String, String> entry : blockDataListHolder.getSwapper().entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
 
-                    ResourceLocation keyLocation = new ResourceLocation(key);
-                    ResourceLocation valueLocation = new ResourceLocation(value);
+                        ResourceLocation keyLocation = new ResourceLocation(key);
+                        ResourceLocation valueLocation = new ResourceLocation(value);
 
-                    boolean containsKey = Registry.BLOCK.keySet().contains(keyLocation);
-                    boolean containsValue = Registry.BLOCK.keySet().contains(valueLocation);
+                        boolean containsKey = Registry.BLOCK.keySet().contains(keyLocation);
+                        boolean containsValue = Registry.BLOCK.keySet().contains(valueLocation);
 
-                    if (!containsKey || !containsValue) {
-                        if (!containsKey) {
-                            LOGGER.error("Key: " + key + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". . Skipping entry...");
-                        }
-                        if (!containsValue) {
-                            LOGGER.error("Value: " + value + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". Skipping entry...");
-                        }
-                        continue;
-                    }
-
-                    Block oldBlock = Registry.BLOCK.get(keyLocation);
-                    Block newBlock = Registry.BLOCK.get(valueLocation);
-
-                    if (oldBlock != newBlock) {
-                        blockBlockMap.put(oldBlock, newBlock);
-                        reversedBlockBlockMap.put(newBlock, oldBlock);
-
-                        if ((reversedBlockBlockMap.containsKey(oldBlock) && blockBlockMap.containsValue(oldBlock))) {
-                            LOGGER.error("Circular reference found for entry: \"" + key + "\":\"" + value + "\". Removing this entry...");
-                            blockBlockMap.remove(oldBlock);
-                            reversedBlockBlockMap.remove(newBlock);
+                        if (!containsKey || !containsValue) {
+                            if (!containsKey) {
+                                LOGGER.error("Key: " + key + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". . Skipping entry...");
+                            }
+                            if (!containsValue) {
+                                LOGGER.error("Value: " + value + " is not a block in the block registry for entry: \"" + key + "\":\"" + value + "\". Skipping entry...");
+                            }
+                            continue;
                         }
 
-                    } else {
-                        LOGGER.error(key + " should not equal " + value);
+                        Block oldBlock = Registry.BLOCK.get(keyLocation);
+                        Block newBlock = Registry.BLOCK.get(valueLocation);
+
+                        if (oldBlock != newBlock) {
+                            blockBlockMap.put(oldBlock, newBlock);
+                            reversedBlockBlockMap.put(newBlock, oldBlock);
+
+                            if ((reversedBlockBlockMap.containsKey(oldBlock) && blockBlockMap.containsValue(oldBlock))) {
+                                LOGGER.error("Circular reference found for entry: \"" + key + "\":\"" + value + "\". Removing this entry...");
+                                blockBlockMap.remove(oldBlock);
+                                reversedBlockBlockMap.remove(newBlock);
+                            }
+
+                        } else {
+                            LOGGER.error(key + " should not equal " + value);
+                        }
                     }
                 }
 
                 BlockSwap.blockToBlockMap = blockBlockMap;
+                BlockSwap.retroGen = blockDataListHolder.isRetroGen();
             } else
                 LOGGER.error(CONFIG_FILE.getAbsolutePath() + " could not be read!");
 
@@ -144,13 +147,32 @@ public class BlockSwap {
     }
 
     public static void createBlockBlockConfig(Path path, Map<String, String> biomeRiverMap, Gson gson) {
-        String jsonString = gson.toJson(biomeRiverMap);
+        String jsonString = gson.toJson(new Config(biomeRiverMap, true));
 
         try {
             Files.createDirectories(path.getParent());
             Files.write(path, jsonString.getBytes());
         } catch (IOException e) {
             LOGGER.error(path.toString() + " could not be created!");
+        }
+    }
+
+    public static class Config {
+
+        private final boolean retroGen;
+        private final Map<String, String> swapper;
+
+        private Config(Map<String, String> swapper, boolean retroGen) {
+            this.retroGen = retroGen;
+            this.swapper = swapper;
+        }
+
+        public boolean isRetroGen() {
+            return retroGen;
+        }
+
+        public Map<String, String> getSwapper() {
+            return swapper;
         }
     }
 }

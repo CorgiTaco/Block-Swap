@@ -16,6 +16,6 @@ public abstract class MixinPlayerList {
 
     @Inject(method = "sendLevelInfo", at = @At(value = "HEAD"))
     private void sendServerConfig(ServerPlayerEntity playerIn, ServerWorld worldIn, CallbackInfo ci) {
-        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(new ClientConfigSyncPacket.SimpleMapCodec(BlockSwap.blockToBlockMap)));
+        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(new ClientConfigSyncPacket.ConfigCodec(BlockSwap.blockToBlockMap, BlockSwap.retroGen)));
     }
 }

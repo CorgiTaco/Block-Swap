@@ -19,15 +19,15 @@ import java.util.function.Supplier;
 @SuppressWarnings("InstantiationOfUtilityClass")
 public class ClientConfigSyncPacket {
 
-    private final SimpleMapCodec codec;
+    private final ConfigCodec codec;
 
-    public ClientConfigSyncPacket(SimpleMapCodec codec) {
+    public ClientConfigSyncPacket(ConfigCodec codec) {
         this.codec = codec;
     }
 
     public static void writeToPacket(ClientConfigSyncPacket packet, PacketBuffer buf) {
         try {
-            buf.writeWithCodec(SimpleMapCodec.PACKET_CODEC, packet.codec);
+            buf.writeWithCodec(ConfigCodec.PACKET_CODEC, packet.codec);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -35,7 +35,7 @@ public class ClientConfigSyncPacket {
 
     public static ClientConfigSyncPacket readFromPacket(PacketBuffer buf) {
         try {
-            return new ClientConfigSyncPacket(buf.readWithCodec(SimpleMapCodec.PACKET_CODEC));
+            return new ClientConfigSyncPacket(buf.readWithCodec(ConfigCodec.PACKET_CODEC));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -45,34 +45,43 @@ public class ClientConfigSyncPacket {
         if (ctx.get().getDirection().getReceptionSide().isClient()) {
             ctx.get().enqueueWork(() -> {
                 BlockSwap.blockToBlockMap = message.codec.getBlockBlockMap();
+                BlockSwap.retroGen = message.codec.isRetroGen();
             });
         }
         ctx.get().setPacketHandled(true);
     }
 
 
-    public static class SimpleMapCodec {
+    public static class ConfigCodec {
 
-        public static final Codec<SimpleMapCodec> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
-            return builder.group(Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC).fieldOf("currentYearTime").forGetter((seasonContext) -> {
+        public static final Codec<ConfigCodec> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
+            return builder.group(Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC).fieldOf("blockToBlockMap").forGetter((configCodec) -> {
                 Map<ResourceLocation, ResourceLocation> newMap = new HashMap<>();
-                seasonContext.blockBlockMap.forEach((key, value) -> newMap.put(Registry.BLOCK.getKey(key), Registry.BLOCK.getKey(value)));
+                configCodec.blockBlockMap.forEach((key, value) -> newMap.put(Registry.BLOCK.getKey(key), Registry.BLOCK.getKey(value)));
                 return newMap;
-            })).apply(builder, (map) -> {
+            }), Codec.BOOL.fieldOf("retroGen").forGetter(configCodec -> {
+                return configCodec.retroGen;
+            })).apply(builder, (map, retroGen) -> {
                 Reference2ReferenceOpenHashMap<Block, Block> newMap = new Reference2ReferenceOpenHashMap<>();
                 map.forEach((key, result) -> newMap.put(Registry.BLOCK.get(key), Registry.BLOCK.get(result)));
-                return new SimpleMapCodec(newMap);
+                return new ConfigCodec(newMap, retroGen);
             });
         });
 
         private final Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap;
+        private final boolean retroGen;
 
-        public SimpleMapCodec(Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap) {
+        public ConfigCodec(Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap, boolean retroGen) {
             this.blockBlockMap = blockBlockMap;
+            this.retroGen = retroGen;
         }
 
         public Reference2ReferenceOpenHashMap<Block, Block> getBlockBlockMap() {
             return blockBlockMap;
+        }
+
+        public boolean isRetroGen() {
+            return retroGen;
         }
     }
 }

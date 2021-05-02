@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "blockswap.refmap.json",
   "mixins": [
+    "MixinChunk",
     "MixinChunkSection",
     "MixinMinecraftServer",
     "MixinPlayerList",

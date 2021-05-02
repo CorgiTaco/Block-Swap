@@ -17,8 +17,10 @@ public abstract class MixinChunkSection {
 
     @Inject(method = "setBlockState(IIILnet/minecraft/block/BlockState;Z)Lnet/minecraft/block/BlockState;", at = @At("HEAD"), cancellable = true)
     private void replaceState(int x, int y, int z, BlockState state, boolean flag, CallbackInfoReturnable<BlockState> cir) {
-        if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
-            cir.setReturnValue(setBlockState(x, y, z, BlockSwap.remapState(state), flag));
+        if (!BlockSwap.retroGen) {
+            if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
+                cir.setReturnValue(setBlockState(x, y, z, BlockSwap.remapState(state), flag));
+            }
         }
     }
 }
