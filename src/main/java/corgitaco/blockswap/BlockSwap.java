@@ -2,6 +2,7 @@ package corgitaco.blockswap;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import corgitaco.blockswap.helpers.TickHelper;
 import corgitaco.blockswap.network.NetworkHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -10,7 +11,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.state.Property;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.SectionPos;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkSection;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -143,6 +149,30 @@ public class BlockSwap {
 
         } catch (IOException e) {
             LOGGER.error(CONFIG_FILE.getAbsolutePath() + " could not be read!");
+        }
+    }
+
+    public static void runRetroGenerator(World world, ChunkSection[] sections, Chunk chunk) {
+        if (BlockSwap.retroGen) {
+            if (!((TickHelper) chunk).markTickDirty()) {
+                for (ChunkSection section : sections) {
+                    if (section != null) {
+                        int bottomY = section.bottomBlockY();
+                        for (int x = 0; x < 16; x++) {
+                            for (int y = 0; y < 16; y++) {
+                                for (int z = 0; z < 16; z++) {
+                                    BlockPos blockPos = new BlockPos(SectionPos.sectionToBlockCoord(chunk.getPos().x) + x, bottomY + y, SectionPos.sectionToBlockCoord(chunk.getPos().z) + z);
+                                    BlockState state = world.getBlockState(blockPos);
+                                    if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
+                                        world.setBlock(blockPos, BlockSwap.remapState(state), 2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                ((TickHelper) chunk).setTickDirty();
+            }
         }
     }
 

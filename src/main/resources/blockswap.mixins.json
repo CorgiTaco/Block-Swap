@@ -6,6 +6,7 @@
   "refmap": "blockswap.refmap.json",
   "mixins": [
     "MixinChunk",
+    "MixinChunkHolder",
     "MixinChunkSection",
     "MixinMinecraftServer",
     "MixinPlayerList",
