@@ -5,16 +5,14 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.BlockSwap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.util.registry.RegistryKey;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 @SuppressWarnings("InstantiationOfUtilityClass")
 public class ClientConfigSyncPacket {
@@ -25,48 +23,33 @@ public class ClientConfigSyncPacket {
         this.codec = codec;
     }
 
-    public static void writeToPacket(ClientConfigSyncPacket packet, PacketBuffer buf) {
-        try {
-            buf.writeWithCodec(ConfigCodec.PACKET_CODEC, packet.codec);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public static void writeToPacket(ClientConfigSyncPacket packet, PacketByteBuf buf) {
+        buf.encode(ConfigCodec.PACKET_CODEC, packet.codec);
     }
 
-    public static ClientConfigSyncPacket readFromPacket(PacketBuffer buf) {
-        try {
-            return new ClientConfigSyncPacket(buf.readWithCodec(ConfigCodec.PACKET_CODEC));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public static ClientConfigSyncPacket readFromPacket(PacketByteBuf buf) {
+        return new ClientConfigSyncPacket(buf.decode(ConfigCodec.PACKET_CODEC));
     }
 
-    public static void handle(ClientConfigSyncPacket message, Supplier<NetworkEvent.Context> ctx) {
-        if (ctx.get().getDirection().getReceptionSide().isClient()) {
-            ctx.get().enqueueWork(() -> {
-                BlockSwap.blockToBlockMap = message.codec.getBlockBlockMap();
-                BlockSwap.retroGen = message.codec.isRetroGen();
-            });
-        }
-        ctx.get().setPacketHandled(true);
+    public static void handle(MinecraftClient client, ClientConfigSyncPacket message) {
+        client.execute(() -> {
+            BlockSwap.blockToBlockMap = message.codec.getBlockBlockMap();
+            BlockSwap.retroGen = message.codec.isRetroGen();
+        });
     }
 
 
     public static class ConfigCodec {
 
-        public static final Codec<ConfigCodec> PACKET_CODEC = RecordCodecBuilder.create((builder) -> {
-            return builder.group(Codec.unboundedMap(ResourceLocation.CODEC, ResourceLocation.CODEC).fieldOf("blockToBlockMap").forGetter((configCodec) -> {
-                Map<ResourceLocation, ResourceLocation> newMap = new HashMap<>();
-                configCodec.blockBlockMap.forEach((key, value) -> newMap.put(Registry.BLOCK.getKey(key), Registry.BLOCK.getKey(value)));
-                return newMap;
-            }), Codec.BOOL.fieldOf("retroGen").forGetter(configCodec -> {
-                return configCodec.retroGen;
-            })).apply(builder, (map, retroGen) -> {
-                Reference2ReferenceOpenHashMap<Block, Block> newMap = new Reference2ReferenceOpenHashMap<>();
-                map.forEach((key, result) -> newMap.put(Registry.BLOCK.get(key), Registry.BLOCK.get(result)));
-                return new ConfigCodec(newMap, retroGen);
-            });
-        });
+        public static final Codec<ConfigCodec> PACKET_CODEC = RecordCodecBuilder.create((builder) -> builder.group(Codec.unboundedMap(Identifier.CODEC, Identifier.CODEC).fieldOf("blockToBlockMap").forGetter((configCodec) -> {
+            Map<Identifier, Identifier> newMap = new HashMap<>();
+            configCodec.blockBlockMap.forEach((key, value) -> newMap.put(Registry.BLOCK.getKey(key).map(RegistryKey::getValue).orElse(null), Registry.BLOCK.getKey(value).map(RegistryKey::getValue).orElse(null)));
+            return newMap;
+        }), Codec.BOOL.fieldOf("retroGen").forGetter(configCodec -> configCodec.retroGen)).apply(builder, (map, retroGen) -> {
+            Reference2ReferenceOpenHashMap<Block, Block> newMap = new Reference2ReferenceOpenHashMap<>();
+            map.forEach((key, result) -> newMap.put(Registry.BLOCK.get(key), Registry.BLOCK.get(result)));
+            return new ConfigCodec(newMap, retroGen);
+        }));
 
         private final Reference2ReferenceOpenHashMap<Block, Block> blockBlockMap;
         private final boolean retroGen;

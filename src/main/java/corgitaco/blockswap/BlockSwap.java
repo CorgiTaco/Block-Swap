@@ -6,21 +6,19 @@ import corgitaco.blockswap.helpers.TickHelper;
 import corgitaco.blockswap.network.NetworkHandler;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.Property;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.SectionPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,19 +33,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Mod("blockswap")
-public class BlockSwap {
+public class BlockSwap implements ClientModInitializer {
     public static final String MOD_ID = "blockswap";
 
     public static Logger LOGGER = LogManager.getLogger();
     public static Reference2ReferenceOpenHashMap<Block, Block> blockToBlockMap = new Reference2ReferenceOpenHashMap<>();
     public static boolean retroGen = false;
-    public static final Path CONFIG_PATH = new File(String.valueOf(FMLPaths.CONFIGDIR.get().resolve(MOD_ID))).toPath();
-
-    public BlockSwap() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
-    }
-
+    public static final Path CONFIG_PATH = new File(String.valueOf(FabricLoader.getInstance().getConfigDir().resolve(MOD_ID))).toPath();
 
     public static void handleBlockBlockConfig() {
         HashMap<String, String> blockBlockMap = new HashMap<>();
@@ -58,7 +50,8 @@ public class BlockSwap {
         BlockSwap.handleBlockBlockConfig(CONFIG_PATH.resolve("block_swap.json"), blockBlockMap);
     }
 
-    private void commonSetup(FMLCommonSetupEvent event) {
+    @Override
+    public void onInitializeClient() {
         NetworkHandler.init();
     }
 
@@ -68,26 +61,25 @@ public class BlockSwap {
     public static BlockState remapState(BlockState incomingState) {
         Block block = BlockSwap.blockToBlockMap.get(incomingState.getBlock());
 
-        BlockState newState = block.defaultBlockState();
+        BlockState newState = block.getDefaultState();
 
         BlockState finalNewState = newState;
         Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState.getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(), (set) -> {
             for (Property<?> property : finalNewState.getProperties()) {
-                set.put(property.generateHashCode(), property);
+                set.put(property.computeHashCode(), property);
             }
         }));
 
         for (Property<?> property : incomingState.getProperties()) {
-            Property newProperty = newStateProperties.get(property.generateHashCode());
+            Property newProperty = newStateProperties.get(property.computeHashCode());
             if (newProperty != null) {
-                newState = newState.setValue(newProperty, incomingState.getValue(newProperty));
+                newState = newState.with(newProperty, incomingState.get(newProperty));
             }
         }
 
         return newState;
     }
 
-    @SuppressWarnings({"ConstantConditions", "unchecked", "deprecation"})
     public static void handleBlockBlockConfig(Path path, Map<String, String> defaultBlockBlockMap) {
         Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().setLenient().create();
         Map<String, String> sortedMap = new TreeMap<>(Comparator.comparing(String::toString));
@@ -107,11 +99,11 @@ public class BlockSwap {
                         String key = entry.getKey();
                         String value = entry.getValue();
 
-                        ResourceLocation keyLocation = new ResourceLocation(key);
-                        ResourceLocation valueLocation = new ResourceLocation(value);
+                        Identifier keyLocation = new Identifier(key);
+                        Identifier valueLocation = new Identifier(value);
 
-                        boolean containsKey = Registry.BLOCK.keySet().contains(keyLocation);
-                        boolean containsValue = Registry.BLOCK.keySet().contains(valueLocation);
+                        boolean containsKey = Registry.BLOCK.getIds().contains(keyLocation);
+                        boolean containsValue = Registry.BLOCK.getIds().contains(valueLocation);
 
                         if (!containsKey || !containsValue) {
                             if (!containsKey) {
@@ -157,14 +149,14 @@ public class BlockSwap {
             if (!((TickHelper) chunk).markTickDirty()) {
                 for (ChunkSection section : sections) {
                     if (section != null) {
-                        int bottomY = section.bottomBlockY();
+                        int bottomY = section.getYOffset();
                         for (int x = 0; x < 16; x++) {
                             for (int y = 0; y < 16; y++) {
                                 for (int z = 0; z < 16; z++) {
-                                    BlockPos blockPos = new BlockPos(SectionPos.sectionToBlockCoord(chunk.getPos().x) + x, bottomY + y, SectionPos.sectionToBlockCoord(chunk.getPos().z) + z);
+                                    BlockPos blockPos = new BlockPos(ChunkSectionPos.getBlockCoord(chunk.getPos().x) + x, bottomY + y, ChunkSectionPos.getBlockCoord(chunk.getPos().z) + z);
                                     BlockState state = world.getBlockState(blockPos);
                                     if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
-                                        world.setBlock(blockPos, BlockSwap.remapState(state), 2);
+                                        world.setBlockState(blockPos, BlockSwap.remapState(state), 2);
                                     }
                                 }
                             }
@@ -183,7 +175,7 @@ public class BlockSwap {
             Files.createDirectories(path.getParent());
             Files.write(path, jsonString.getBytes());
         } catch (IOException e) {
-            LOGGER.error(path.toString() + " could not be created!");
+            LOGGER.error(path + " could not be created!");
         }
     }
 

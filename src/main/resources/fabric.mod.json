@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "blockswap",
+  "version": "${version}",
+
+  "name": "Block Swap",
+  "description": "Simply replaces one block with another.",
+  "authors": [
+    "Corgi Taco"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/Block-Swap",
+    "sources": "https://github.com/CorgiTaco/Block-Swap",
+    "issues": "https://github.com/CorgiTaco/Block-Swap/issues"
+  },
+
+  "license": "LGPLv3",
+  "icon": "icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "corgitaco.blockswap.BlockSwap"
+    ]
+  },
+  "mixins": [
+    "blockswap.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.17.x",
+    "java": ">=16"
+  }
+}

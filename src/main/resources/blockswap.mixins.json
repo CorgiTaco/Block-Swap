@@ -2,17 +2,14 @@
   "required": true,
   "minVersion": "0.8",
   "package": "corgitaco.blockswap.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "refmap": "blockswap.refmap.json",
+  "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "MixinChunk",
+    "MixinWorldChunk",
     "MixinChunkHolder",
     "MixinChunkSection",
     "MixinMinecraftServer",
-    "MixinPlayerList",
+    "MixinPlayerManager",
     "MixinWorld"
-  ],
-  "client": [
   ],
   "injectors": {
     "defaultRequire": 1

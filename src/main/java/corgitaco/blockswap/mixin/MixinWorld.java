@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinWorld {
 
     @Shadow
-    public abstract boolean setBlock(BlockPos pos, BlockState state, int i, int flags);
+    public abstract boolean setBlockState(BlockPos pos, BlockState state, int i, int flags);
 
-    @Inject(method = "setBlock(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("INVOKE"), cancellable = true)
+    @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("INVOKE"), cancellable = true)
     private void isIncompatibleBlock(BlockPos pos, BlockState state, int i, int flags, CallbackInfoReturnable<Boolean> cir) {
         if (BlockSwap.blockToBlockMap.containsKey(state.getBlock())) {
-            cir.setReturnValue(setBlock(pos, BlockSwap.remapState(state), i, flags));
+            cir.setReturnValue(setBlockState(pos, BlockSwap.remapState(state), i, flags));
         }
     }
 }
