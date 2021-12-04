@@ -1,0 +1,28 @@
+modLoader="javafml" #mandatory
+loaderVersion="[38,)"
+license="LGPLv3"
+issueTrackerURL="https://github.com/CorgiTaco/Block-Swap/issues" #optional
+[[mods]]
+modId="blockswap"
+version="${file.jarVersion}"
+displayName="Block Swap"
+displayURL="https://github.com/CorgiTaco/Block-Swap/"
+logoFile=""
+credits=""
+authors="Corgi Taco"
+description='''
+Simply replaces one block with another.
+'''
+[[dependencies.blockswap]]
+    modId="forge" #mandatory
+    mandatory=true #mandatory
+    versionRange="[38,)" #mandatory
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.blockswap]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18,1.19)"
+    ordering="NONE"
+    side="BOTH"
