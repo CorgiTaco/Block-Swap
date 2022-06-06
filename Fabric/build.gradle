@@ -1,39 +1,105 @@
+import java.util.stream.Collectors
+
+buildscript {
+    repositories {
+        maven { url = 'https://maven.parchmentmc.org' }
+    }
+    dependencies {
+        classpath group: 'gradle.plugin.com.modrinth.minotaur', name: 'Minotaur', version: '1.2.1'
+    }
+}
+
 plugins {
     id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'maven-publish'
     id 'idea'
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id "net.darkhax.curseforgegradle" version "1.0.7"
+}
+
+tasks.build.dependsOn(tasks.findByName("shadowJar"))
+
+configurations {
+    shadow
+    implementation.extendsFrom(shadow)
+}
+shadowJar {
+    configurations = [project.configurations.shadow]
+    relocate 'blue.endless.jankson', "${project.group}.shadow.blue.endless.jankson"
 }
 
 archivesBaseName = "${mod_name}-fabric-${minecraft_version}"
 
+repositories {
+    maven { url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    maven {
+        name = 'Forge'
+        url = 'https://maven.minecraftforge.net'
+    }
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
+    }
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
+    mappings loom.layered() {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-1.18.2:${parchment_version}@zip")
+    }
+
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":Common")
+    shadow("blue.endless:jankson:${jankson_version}")
+
+
+    modImplementation("com.github.CorgiTaco:databreaker:${databreaker_version}") {
+        exclude module: "fabric-loader"
+    }
+
+    modImplementation "curse.maven:starlight-521783:3667443"
+    modImplementation "curse.maven:cyanide-543444:3757528"
+    modImplementation "curse.maven:iris-455508:3770305"
+
+    modImplementation "curse.maven:sodium-394468:3669187"
+
+    runtimeOnly compileOnly('org.joml:joml:1.10.2')
+    runtimeOnly compileOnly("org.anarres:jcpp:1.4.14")
 }
 
 loom {
     runs {
+        def args = []
+
         client {
             client()
             setConfigName("Fabric Client")
             ideConfigGenerated(true)
             runDir("run")
+            vmArgs(args)
         }
         server {
             server()
             setConfigName("Fabric Server")
             ideConfigGenerated(true)
             runDir("run")
+            vmArgs(args)
         }
     }
 }
 
-
 processResources {
-    from project(":Common").sourceSets.main.resources
+//    from project(":Common").sourceSets.main.resources
     inputs.property "version", project.version
 
     filesMatching("fabric.mod.json") {
@@ -45,8 +111,11 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile) {
-    source(project(":Common").sourceSets.main.allSource)
+//tasks.withType(JavaCompile) {
+//    source(project(":Common").sourceSets.main.allSource)
+//}
+tasks.withType(Javadoc) {
+    failOnError false
 }
 
 jar {
@@ -54,19 +123,69 @@ jar {
         rename { "${it}_${mod_name}" }
     }
 }
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact(remapJar) {
-                builtBy remapJar
-            }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+// Disable to build with gradle //TODO: Fix gradle + building w/ intellij
+sourceSets {
+    main {
+        java {
+//            srcDir 'src/main/java'
+            srcDirs project(':Common').sourceSets.main.java.srcDirs
+        }
+        resources {
+//            srcDir 'src/main/resources'
+            srcDirs project(':Common').sourceSets.main.resources.srcDirs
         }
     }
+}
 
-    repositories {
+remapJar {
+    input.set shadowJar.archiveFile
+}
+
+task fabric_checkForRefmap() {
+    doLast {
+        File file1 = remapJar.archiveFile.get().asFile
+        logger.info("Verifying refmap exists...")
+        if (file1.exists()) {
+            FileTree files = zipTree(file1)
+            Set<String> fileNames = files.getFiles().stream().map(file -> file.getName()).collect(Collectors.toSet())
+
+            String refmap = "${archivesBaseName}-refmap.json"
+            if (!fileNames.contains(refmap)) {
+                throw new IllegalStateException("Refmap is missing.")
+            }
+        } else {
+            throw new IllegalStateException("File is missing.")
+        }
+        logger.info("Refmap found!")
     }
 }
+
+task fabric_publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
+    apiToken = "$System.env.CURSEFORGE_KEY"
+    int projectId = 552471
+    String changelogText = projectDir.toPath().getParent().resolve("CHANGELOG.md").getText('UTF-8')
+
+    def mainFile = upload(projectId, remapJar)
+    mainFile.changelog = changelogText
+    mainFile.changelogType = "markdown"
+    mainFile.releaseType = "${project.release_type}"
+    mainFile.addGameVersion("${project.minecraft_version}")
+    mainFile.addModLoader("fabric")
+}
+
+task fabric_buildAndReleaseCurseforge {}
+tasks.fabric_checkForRefmap.mustRunAfter tasks.build
+tasks.fabric_publishCurseForge.mustRunAfter tasks.fabric_checkForRefmap
+tasks.fabric_buildAndReleaseCurseforge.dependsOn(tasks.build, tasks.fabric_checkForRefmap, tasks.fabric_publishCurseForge)
+
+apply from: 'gradle/modrinth.gradle'
+task fabric_buildAndReleaseModrinth {}
+tasks.fabric_checkForRefmap.mustRunAfter tasks.build
+tasks.fabric_publishModrinth.mustRunAfter tasks.fabric_checkForRefmap
+tasks.fabric_buildAndReleaseModrinth.dependsOn(tasks.build, tasks.fabric_checkForRefmap, tasks.fabric_publishModrinth)
+
+task fabric_buildAndReleaseModrinthAndCurseforge {}
+tasks.fabric_checkForRefmap.mustRunAfter tasks.build
+tasks.fabric_publishCurseForge.mustRunAfter tasks.fabric_checkForRefmap
+tasks.fabric_publishModrinth.mustRunAfter tasks.fabric_publishCurseForge
+tasks.fabric_buildAndReleaseModrinthAndCurseforge.dependsOn(tasks.build, tasks.fabric_checkForRefmap, tasks.fabric_publishCurseForge, tasks.fabric_publishModrinth)

@@ -11,7 +11,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 public class BlockSwapForge {
 
     public BlockSwapForge() {
-        BlockSwap.init(FMLPaths.CONFIGDIR.get());
+        BlockSwap.init(FMLPaths.CONFIGDIR.get().resolve(BlockSwap.MOD_ID));
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         eventBus.addListener(this::commonSetup);
     }

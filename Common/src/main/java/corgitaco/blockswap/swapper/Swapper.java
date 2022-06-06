@@ -1,7 +1,11 @@
 package corgitaco.blockswap.swapper;
 
+import com.mojang.serialization.Codec;
 import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.config.BlockSwapConfig;
+import corgitaco.blockswap.mixin.access.StateHolderAccess;
+import corgitaco.blockswap.util.CodecUtil;
+import corgitaco.blockswap.util.CommentedCodec;
 import corgitaco.blockswap.util.TickHelper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
@@ -11,11 +15,29 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
+
+import java.util.function.Function;
 
 public class Swapper {
+    public static final Codec<BlockState> COMMENTED_STATE_CODEC = codec(CodecUtil.BLOCK_CODEC, Block::defaultBlockState);
+    public static final Codec<FluidState> COMMENTED_FLUID_CODEC = codec(CodecUtil.FLUID_CODEC, Fluid::defaultFluidState);
+
+    protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> object, Function<O, S> defaultVal) {
+        return object.dispatch("Name", (stateHolder) -> {
+            return ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner();
+        }, (o) -> {
+            S stateProperty = defaultVal.apply(o);
+            return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
+        });
+    }
+
+
     public static Reference2ReferenceOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> cache = new Reference2ReferenceOpenHashMap<>();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -76,5 +98,8 @@ public class Swapper {
             }
         }
     }
+
+
+
 
 }

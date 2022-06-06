@@ -1,19 +1,16 @@
 package corgitaco.blockswap;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.mojang.serialization.JsonOps;
+import blue.endless.jankson.api.SyntaxError;
 import corgitaco.blockswap.config.BlockSwapConfig;
+import corgitaco.blockswap.util.jankson.JanksonJsonOps;
+import corgitaco.blockswap.util.jankson.JanksonUtil;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 public class BlockSwap {
     public static final String MOD_ID = "blockswap";
@@ -37,14 +34,14 @@ public class BlockSwap {
 
     public static BlockSwapConfig getConfig(boolean reload) {
         if (CONFIG == null || reload) {
-            File configFile = CONFIG_PATH.resolve("block_swap.json").toFile();
+            Path path = CONFIG_PATH.resolve("block_swap.json5");
+            File configFile = path.toFile();
             try {
                 if (!configFile.exists()) {
-                    final Optional<JsonElement> result = BlockSwapConfig.CODEC.encodeStart(JsonOps.INSTANCE, BlockSwapConfig.DEFAULT).result();
-                    Files.write(configFile.toPath(), new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(result.get()).getBytes());
+                    JanksonUtil.createConfig(path, BlockSwapConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, BlockSwapConfig.DEFAULT);
                 }
-                CONFIG = BlockSwapConfig.CODEC.decode(JsonOps.INSTANCE, new JsonParser().parse(new FileReader(configFile))).resultOrPartial(BlockSwap.LOGGER::error).get().getFirst();
-            } catch (IOException e) {
+                CONFIG = JanksonUtil.readConfig(path, BlockSwapConfig.CODEC, JanksonJsonOps.INSTANCE);
+            } catch (IOException | SyntaxError e) {
                 e.printStackTrace();
             }
         }

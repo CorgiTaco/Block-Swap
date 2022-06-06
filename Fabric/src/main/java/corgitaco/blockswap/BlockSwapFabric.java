@@ -8,7 +8,7 @@ public class BlockSwapFabric implements ModInitializer {
     
     @Override
     public void onInitialize() {
-        BlockSwap.init(FabricLoader.getInstance().getConfigDir());
+        BlockSwap.init(FabricLoader.getInstance().getConfigDir().resolve(BlockSwap.MOD_ID));
         NetworkHandler.init();
     }
 }

@@ -7,9 +7,9 @@ archivesBaseName = "${mod_name}-common-${minecraft_version}"
 
 minecraft {
     version(minecraft_version)
-    runs {   
+    runs {
         if (project.hasProperty('common_runs_enabled') ? project.findProperty('common_runs_enabled').toBoolean() : true) {
-        
+
             server(project.hasProperty('common_server_run_name') ? project.findProperty('common_server_run_name') : 'vanilla_server') {
                 workingDirectory(this.file("run"))
             }
@@ -20,16 +20,23 @@ minecraft {
     }
 }
 
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
 dependencies {
-     compileOnly group:'org.spongepowered', name:'mixin', version:'0.8.4'
+    compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.4'
+    compileOnly("com.google.code.findbugs:jsr305:3.0.2")
+    compileOnly("org.ow2.asm:asm-tree:9.2")
+    compileOnly("blue.endless:jankson:${jankson_version}")
 }
 
 processResources {
-
     def buildProps = project.properties.clone()
 
     filesMatching(['pack.mcmeta']) {
-
         expand buildProps
     }
+}
+
+tasks.withType(Javadoc) {
+    failOnError false
 }
