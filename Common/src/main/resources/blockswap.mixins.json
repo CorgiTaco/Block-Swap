@@ -6,6 +6,7 @@
   "mixins": [
     "MixinChunkHolder",
     "MixinChunkSection",
+    "MixinChunkSerializer",
     "MixinLevel",
     "MixinLevelChunk",
     "MixinMinecraftServer",

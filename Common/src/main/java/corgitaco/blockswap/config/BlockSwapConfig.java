@@ -1,14 +1,22 @@
 package corgitaco.blockswap.config;
 
+import blue.endless.jankson.api.SyntaxError;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.util.CodecUtil;
 import corgitaco.blockswap.util.CommentedCodec;
+import corgitaco.blockswap.util.jankson.JanksonJsonOps;
+import corgitaco.blockswap.util.jankson.JanksonUtil;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -99,6 +107,9 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
 
     public static final Codec<BlockSwapConfig> CODEC = RAW_CODEC.flatXmap(verifyConfig(), verifyConfig());
 
+    private static BlockSwapConfig CONFIG = null;
+
+
     public boolean contains(BlockState state) {
         return blockBlockMap.containsKey(state.getBlock()) || blockStateBlockStateMap.containsKey(state);
     }
@@ -137,5 +148,26 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
 
             return DataResult.success(blockSwapConfig);
         };
+    }
+
+    public static BlockSwapConfig getConfig(BlockSwapConfig server) {
+        CONFIG = server;
+        return CONFIG;
+    }
+
+    public static BlockSwapConfig getConfig(boolean reload) {
+        if (CONFIG == null || reload) {
+            Path path = BlockSwap.CONFIG_PATH.resolve("block_swap.json5");
+            File configFile = path.toFile();
+            try {
+                if (!configFile.exists()) {
+                    JanksonUtil.createConfig(path, BlockSwapConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, BlockSwapConfig.DEFAULT);
+                }
+                CONFIG = JanksonUtil.readConfig(path, BlockSwapConfig.CODEC, JanksonJsonOps.INSTANCE);
+            } catch (IOException | SyntaxError e) {
+                e.printStackTrace();
+            }
+        }
+        return CONFIG;
     }
 }

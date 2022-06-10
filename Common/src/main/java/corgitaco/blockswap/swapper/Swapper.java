@@ -42,7 +42,7 @@ public class Swapper {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static BlockState remapState(BlockState incomingState) {
-        BlockSwapConfig config = BlockSwap.getConfig(false);
+        BlockSwapConfig config = BlockSwapConfig.getConfig(false);
 
         if (config.blockStateBlockStateMap().containsKey(incomingState)) {
             return config.blockStateBlockStateMap().get(incomingState);
@@ -72,7 +72,7 @@ public class Swapper {
 
     public static void runRetroGenerator(Level world, LevelChunkSection[] sections, LevelChunk chunk) {
         if (BlockSwap.retroGen) {
-            BlockSwapConfig config = BlockSwap.getConfig(false);
+            BlockSwapConfig config = BlockSwapConfig.getConfig(false);
             if (!((TickHelper) chunk).markTickDirty()) {
                 for (LevelChunkSection section : sections) {
                     if (section != null) {

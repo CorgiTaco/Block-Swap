@@ -1,6 +1,6 @@
 package corgitaco.blockswap.mixin;
 
-import corgitaco.blockswap.BlockSwap;
+import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.swapper.Swapper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -15,12 +15,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinLevel {
 
     @Shadow
-    public abstract boolean setBlock(BlockPos pos, BlockState state, int i, int flags);
+    public abstract boolean setBlock(BlockPos pos, BlockState state, int i);
 
-    @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;II)Z", at = @At("INVOKE"), cancellable = true)
-    private void isIncompatibleBlock(BlockPos pos, BlockState state, int i, int flags, CallbackInfoReturnable<Boolean> cir) {
-        if (BlockSwap.getConfig(false).contains(state)) {
-            cir.setReturnValue(setBlock(pos, Swapper.remapState(state), i, flags));
+    @Inject(method = "setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z", at = @At("HEAD"), cancellable = true)
+    private void isIncompatibleBlock(BlockPos pos, BlockState state, int i, CallbackInfoReturnable<Boolean> cir) {
+        if (BlockSwapConfig.getConfig(false).contains(state)) {
+            cir.setReturnValue(setBlock(pos, Swapper.remapState(state), i));
         }
     }
 }

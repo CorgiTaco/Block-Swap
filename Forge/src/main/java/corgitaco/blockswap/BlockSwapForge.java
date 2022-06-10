@@ -1,5 +1,7 @@
 package corgitaco.blockswap;
 
+import corgitaco.blockswap.config.BlockSwapConfig;
+import corgitaco.blockswap.config.MissingBlockIDsConfig;
 import corgitaco.blockswap.network.NetworkHandler;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -17,6 +19,8 @@ public class BlockSwapForge {
     }
 
     private void commonSetup(FMLCommonSetupEvent commonSetupEvent) {
+        BlockSwapConfig.getConfig(true);
+        MissingBlockIDsConfig.getConfig(true);
         NetworkHandler.init();
     }
 }

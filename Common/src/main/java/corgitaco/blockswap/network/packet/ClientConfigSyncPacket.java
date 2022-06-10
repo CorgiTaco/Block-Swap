@@ -1,6 +1,5 @@
 package corgitaco.blockswap.network.packet;
 
-import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.network.packet.util.PacketHandle;
 import net.minecraft.network.FriendlyByteBuf;
@@ -23,6 +22,6 @@ public class ClientConfigSyncPacket implements PacketHandle {
 
     @Override
     public void handle() {
-        BlockSwap.getConfig(blockSwapConfig);
+        BlockSwapConfig.getConfig(blockSwapConfig);
     }
 }

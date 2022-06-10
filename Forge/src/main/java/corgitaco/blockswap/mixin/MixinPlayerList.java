@@ -1,6 +1,6 @@
 package corgitaco.blockswap.mixin;
 
-import corgitaco.blockswap.BlockSwap;
+import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.network.NetworkHandler;
 import corgitaco.blockswap.network.packet.ClientConfigSyncPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +16,6 @@ public abstract class MixinPlayerList {
 
     @Inject(method = "sendLevelInfo", at = @At(value = "HEAD"))
     private void sendServerConfig(ServerPlayer playerIn, ServerLevel worldIn, CallbackInfo ci) {
-        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(BlockSwap.getConfig(true)));
+        NetworkHandler.sendToClient(playerIn, new ClientConfigSyncPacket(BlockSwapConfig.getConfig(true)));
     }
 }

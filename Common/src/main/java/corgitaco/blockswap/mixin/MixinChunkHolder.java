@@ -1,6 +1,5 @@
 package corgitaco.blockswap.mixin;
 
-import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.swapper.Swapper;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.world.level.chunk.LevelChunk;
