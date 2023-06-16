@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
         classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
         classpath 'org.parchmentmc:librarian:1.+'
         classpath group: 'gradle.plugin.com.modrinth.minotaur', name: 'Minotaur', version: '1.2.1'
@@ -16,8 +16,8 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
-    id "net.darkhax.curseforgegradle" version "1.0.7"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id "net.darkhax.curseforgegradle" version "1.1.15"
 }
 apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle'
@@ -25,7 +25,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-tasks.build.dependsOn(tasks.findByName("shadowJar"))
+tasks.build.dependsOn(shadowJar)
 
 configurations {
     shadow
@@ -54,7 +54,7 @@ reobf {
 }
 
 minecraft {
-    mappings channel: 'parchment', version: "1.18.2-${parchment_version}-1.19"
+    mappings channel: 'parchment', version: "1.19.2-${parchment_version}-1.19.2"
 
     if (project.hasProperty('forge_ats_enabled') && project.findProperty('forge_ats_enabled').toBoolean()) {
         // This location is hardcoded in Forge and can not be changed.
