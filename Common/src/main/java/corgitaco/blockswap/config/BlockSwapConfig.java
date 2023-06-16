@@ -10,7 +10,7 @@ import corgitaco.blockswap.util.CommentedCodec;
 import corgitaco.blockswap.util.jankson.JanksonJsonOps;
 import corgitaco.blockswap.util.jankson.JanksonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -119,7 +119,7 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
             StringBuilder blockSwapperErrors = new StringBuilder();
             for (Block block : blockSwapConfig.blockBlockMap.values()) {
                 if (blockSwapConfig.blockBlockMap.containsKey(block)) {
-                    blockSwapperErrors.append(Registry.BLOCK.getKey(block)).append("\n");
+                    blockSwapperErrors.append(BuiltInRegistries.BLOCK.getKey(block)).append("\n");
                 }
             }
 

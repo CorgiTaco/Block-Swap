@@ -3,6 +3,7 @@ package corgitaco.blockswap.mixin;
 import com.mojang.serialization.Codec;
 import corgitaco.blockswap.config.MissingBlockIDsConfig;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -39,7 +40,7 @@ public class MixinChunkSerializer {
                 String name = tag1.getString("Name");
                 if (idRemapper.containsKey(name)) {
                     tag1.remove("Name");
-                    tag1.putString("Name", Registry.BLOCK.getKey(idRemapper.get(name)).toString());
+                    tag1.putString("Name", BuiltInRegistries.BLOCK.getKey(idRemapper.get(name)).toString());
                 }
             }
 
