@@ -153,7 +153,7 @@ public record JanksonJsonOps(boolean compressed) implements DynamicOps<JsonEleme
         if (list != empty()) {
             result.addAll((Collection<? extends JsonElement>) list);
         }
-        values.forEach(result::add);
+        result.addAll(values);
         return DataResult.success(result);
     }
 
@@ -168,7 +168,7 @@ public record JanksonJsonOps(boolean compressed) implements DynamicOps<JsonEleme
 
         final JsonObject output = new JsonObject();
         if (map != empty()) {
-            ((JsonObject) map).entrySet().forEach(entry -> output.put(entry.getKey(), entry.getValue()));
+            ((JsonObject) map).forEach((key1, value1) -> output.put(key1, value1));
         }
         output.put(((JsonPrimitive) key).asString(), value);
 
@@ -183,7 +183,7 @@ public record JanksonJsonOps(boolean compressed) implements DynamicOps<JsonEleme
 
         final JsonObject output = new JsonObject();
         if (map != empty()) {
-            ((JsonObject) map).entrySet().forEach(entry -> output.put(entry.getKey(), entry.getValue()));
+            ((JsonObject) map).forEach((key, value) -> output.put(key, value));
         }
 
         final List<JsonElement> missed = Lists.newArrayList();
@@ -226,10 +226,9 @@ public record JanksonJsonOps(boolean compressed) implements DynamicOps<JsonEleme
 
     @Override
     public DataResult<MapLike<JsonElement>> getMap(final JsonElement input) {
-        if (!(input instanceof JsonObject)) {
+        if (!(input instanceof JsonObject object)) {
             return DataResult.error("Not a JSON object: " + input);
         }
-        final JsonObject object = (JsonObject) input;
         return DataResult.success(new CommentsTrackerMapLike<>() {
             @Nullable
             @Override
@@ -277,16 +276,14 @@ public record JanksonJsonOps(boolean compressed) implements DynamicOps<JsonEleme
     @Override
     public JsonElement createMap(final Stream<Pair<JsonElement, JsonElement>> map) {
         final JsonObject result = new JsonObject();
-        map.forEach(p -> {
-            result.put(((JsonPrimitive) p.getFirst()).asString(), p.getSecond());
-        });
+        map.forEach(p -> result.put(((JsonPrimitive) p.getFirst()).asString(), p.getSecond()));
         return result;
     }
 
     @Override
     public DataResult<Stream<JsonElement>> getStream(final JsonElement input) {
         if (input instanceof JsonArray) {
-            return DataResult.success(StreamSupport.stream(((JsonArray) input).spliterator(), false).map(e -> e instanceof JsonNull ? null : e));
+            return DataResult.success(((JsonArray) input).stream().map(e -> e instanceof JsonNull ? null : e));
         }
         return DataResult.error("Not a json array: " + input);
     }
