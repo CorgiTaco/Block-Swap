@@ -30,10 +30,8 @@ public class MixinChunkSerializer {
     @Inject(method = "read", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/Codec;parse(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;", ordinal = 0), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void repairStates(ServerLevel $$0, PoiManager $$1, ChunkPos $$2, CompoundTag $$3, CallbackInfoReturnable<ProtoChunk> cir, ChunkPos $$4, UpgradeData $$5, boolean $$6, ListTag $$7, int $$8, LevelChunkSection[] $$9, boolean $$10, ChunkSource $$11, LevelLightEngine $$12, Registry $$13, Codec $$14, boolean $$15, int $$16, CompoundTag sectionTag, int $$18, int $$19) {
         if (sectionTag.contains("block_states", 10)) {
-            CompoundTag states = sectionTag.getCompound("block_states");
-            MissingBlockIDsConfig missingBlockIDsConfig = MissingBlockIDsConfig.getConfig(false);
-            ListTag palette = states.getList("palette", Tag.TAG_COMPOUND);
-            Map<String, Block> idRemapper = missingBlockIDsConfig.idRemapper();
+            ListTag palette = sectionTag.getCompound("block_states").getList("palette", Tag.TAG_COMPOUND);
+            Map<String, Block> idRemapper = MissingBlockIDsConfig.getConfig(false).idRemapper();
 
             for (Tag tag : palette) {
                 CompoundTag tag1 = (CompoundTag) tag;

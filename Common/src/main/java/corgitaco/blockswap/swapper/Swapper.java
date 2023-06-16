@@ -35,7 +35,6 @@ public class Swapper {
         });
     }
 
-
     public static Reference2ReferenceOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> cache = new Reference2ReferenceOpenHashMap<>();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -45,11 +44,7 @@ public class Swapper {
         if (config.blockStateBlockStateMap().containsKey(incomingState)) {
             return config.blockStateBlockStateMap().get(incomingState);
         } else {
-
-
-            Block block = config.blockBlockMap().get(incomingState.getBlock());
-
-            BlockState newState = block.defaultBlockState();
+            BlockState newState = config.blockBlockMap().get(incomingState.getBlock()).defaultBlockState();
 
             BlockState finalNewState = newState;
             Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState.getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(), (set) -> {
@@ -96,8 +91,6 @@ public class Swapper {
             }
         }
     }
-
-
 
 
 }
