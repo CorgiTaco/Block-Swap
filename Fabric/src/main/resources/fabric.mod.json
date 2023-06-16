@@ -13,8 +13,8 @@
     },
   
     "license": "LGPLv3",
-    "icon": "assets/modid/icon.png",
-  
+    "icon": "assets/blockswap/blockswap.png",
+
     "environment": "*",
     "entrypoints": {
       "main": [
