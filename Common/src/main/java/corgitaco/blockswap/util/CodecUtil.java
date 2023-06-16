@@ -48,7 +48,7 @@ public class CodecUtil {
                     registryElements.append(i).append(". \"").append(registry.getKey(object).toString()).append("\"\n");
                 }
 
-                return DataResult.error(String.format("\"%s\" is not a valid id in registry: %s.\nCurrent Registry Values:\n\n%s\n", location.toString(), registry, registryElements));
+                return DataResult.error(() -> String.format("\"%s\" is not a valid id in registry: %s.\nCurrent Registry Values:\n\n%s\n", location.toString(), registry, registryElements));
             }
             return DataResult.success(result.get());
         }, registry::getKey);

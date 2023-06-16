@@ -32,7 +32,7 @@ public class NetworkHandler {
     }
 
     public static void sendToClient(ServerPlayer playerEntity, Object objectToSend) {
-        SIMPLE_CHANNEL.sendTo(objectToSend, playerEntity.connection.getConnection(), NetworkDirection.PLAY_TO_CLIENT);
+        SIMPLE_CHANNEL.sendTo(objectToSend, playerEntity.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     }
 
     public static void sendToServer(Object objectToSend) {

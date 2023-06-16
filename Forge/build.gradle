@@ -54,7 +54,8 @@ reobf {
 }
 
 minecraft {
-    mappings channel: 'parchment', version: "1.19.3-${parchment_version}-1.19.3"
+    //mappings channel: 'parchment', version: "1.19.3-${parchment_version}-1.19.3"
+    mappings channel: 'official', version: "${minecraft_version}"
 
     if (project.hasProperty('forge_ats_enabled') && project.findProperty('forge_ats_enabled').toBoolean()) {
         // This location is hardcoded in Forge and can not be changed.
