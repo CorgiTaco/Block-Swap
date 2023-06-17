@@ -1,5 +1,5 @@
 modLoader="javafml" #mandatory
-loaderVersion="[45,)"
+loaderVersion="[46,)"
 license="LGPLv3"
 issueTrackerURL="https://github.com/CorgiTaco/Block-Swap/issues" #optional
 [[mods]]
@@ -16,13 +16,13 @@ Simply replaces one block with another.
 [[dependencies.blockswap]]
     modId="forge" #mandatory
     mandatory=true #mandatory
-    versionRange="[45.1,)" #mandatory
+    versionRange="[46,)" #mandatory
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.blockswap]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.4,)"
+    versionRange="[1.20,)"
     ordering="NONE"
     side="BOTH"
