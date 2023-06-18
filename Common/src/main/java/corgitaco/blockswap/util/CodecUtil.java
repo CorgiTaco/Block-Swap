@@ -6,6 +6,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.swapper.Swapper;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -16,8 +17,8 @@ import java.util.*;
 public class CodecUtil {
 
 
-    public static Codec<Block> BLOCK_CODEC = createLoggedExceptionRegistryCodec(Registry.BLOCK);
-    public static Codec<Fluid> FLUID_CODEC = createLoggedExceptionRegistryCodec(Registry.FLUID);
+    public static Codec<Block> BLOCK_CODEC = createLoggedExceptionRegistryCodec(BuiltInRegistries.BLOCK);
+    public static Codec<Fluid> FLUID_CODEC = createLoggedExceptionRegistryCodec(BuiltInRegistries.FLUID);
 
     public static Codec<Pair<BlockState, BlockState>> PAIR_STATE_CODEC = RecordCodecBuilder.create(builder -> builder.group(
             Swapper.COMMENTED_STATE_CODEC.fieldOf("old").forGetter(Pair::getFirst),

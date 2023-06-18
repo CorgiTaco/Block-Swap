@@ -8,7 +8,7 @@ import corgitaco.blockswap.config.MissingBlockIDsConfig;
 import corgitaco.blockswap.swapper.Swapper;
 import corgitaco.blockswap.util.jankson.JanksonJsonOps;
 import corgitaco.blockswap.util.jankson.JanksonUtil;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -38,8 +38,8 @@ public abstract class MixinMinecraftServer {
         MissingBlockIDsConfig missingBlockIDsConfig = MissingBlockIDsConfig.getConfig(true);
 
         if (config.generateAllKnownStates()) {
-            Map<Block, List<BlockState>> allKnownStates = new TreeMap<>(Comparator.comparing(block -> Registry.BLOCK.getKey(block).toString()));
-            for (Block block : Registry.BLOCK) {
+            Map<Block, List<BlockState>> allKnownStates = new TreeMap<>(Comparator.comparing(block -> BuiltInRegistries.BLOCK.getKey(block).toString()));
+            for (Block block : BuiltInRegistries.BLOCK) {
                 allKnownStates.computeIfAbsent(block, key -> key.getStateDefinition().getPossibleStates());
             }
 
@@ -50,7 +50,7 @@ public abstract class MixinMinecraftServer {
 
 
             allKnownStates.forEach((block, blockStates) -> {
-                ResourceLocation blockKey = Registry.BLOCK.getKey(block);
+                ResourceLocation blockKey = BuiltInRegistries.BLOCK.getKey(block);
                 JanksonUtil.createConfig(BlockSwap.CONFIG_PATH.resolve("known_states").resolve(blockKey.getNamespace()).resolve(blockKey.getPath() + ".json5"), Swapper.COMMENTED_STATE_CODEC.listOf(), JanksonUtil.HEADER_CLOSED, ImmutableMap.of(), JanksonJsonOps.INSTANCE, blockStates);
             });
         }
