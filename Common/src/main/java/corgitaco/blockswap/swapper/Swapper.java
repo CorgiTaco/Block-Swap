@@ -29,14 +29,11 @@ public class Swapper {
     public static final Codec<FluidState> COMMENTED_FLUID_CODEC = codec(CodecUtil.FLUID_CODEC, Fluid::defaultFluidState);
 
     protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> object, Function<O, S> defaultVal) {
-        return object.dispatch("Name", (stateHolder) -> {
-            return ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner();
-        }, (o) -> {
+        return object.dispatch("Name", (stateHolder) -> ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner(), (o) -> {
             S stateProperty = defaultVal.apply(o);
             return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
         });
     }
-
 
     public static Reference2ReferenceOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> cache = new Reference2ReferenceOpenHashMap<>();
 
@@ -47,11 +44,7 @@ public class Swapper {
         if (config.blockStateBlockStateMap().containsKey(incomingState)) {
             return config.blockStateBlockStateMap().get(incomingState);
         } else {
-
-
-            Block block = config.blockBlockMap().get(incomingState.getBlock());
-
-            BlockState newState = block.defaultBlockState();
+            BlockState newState = config.blockBlockMap().get(incomingState.getBlock()).defaultBlockState();
 
             BlockState finalNewState = newState;
             Int2ObjectOpenHashMap<Property<?>> newStateProperties = cache.computeIfAbsent(newState.getBlock(), (block1) -> Util.make(new Int2ObjectOpenHashMap<>(), (set) -> {
@@ -98,8 +91,6 @@ public class Swapper {
             }
         }
     }
-
-
 
 
 }
