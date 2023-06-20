@@ -64,12 +64,13 @@ public class Swapper {
     }
 
     public static void runRetroGenerator(Level world, LevelChunkSection[] sections, LevelChunk chunk) {
-        if (BlockSwap.retroGen) {
-            BlockSwapConfig config = BlockSwapConfig.getConfig(false);
+        BlockSwapConfig config = BlockSwapConfig.getConfig(false);
+        if (config.retroGen()) {
             if (!((TickHelper) chunk).markTickDirty()) {
-                for (LevelChunkSection section : sections) {
+                for (int i = 0; i < sections.length; i++) {
+                    LevelChunkSection section = sections[i];
                     if (section != null) {
-                        int bottomY = chunk.getLevel().dimensionType().minY();
+                        int bottomY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(i));
                         for (int x = 0; x < 16; x++) {
                             for (int y = 0; y < 16; y++) {
                                 for (int z = 0; z < 16; z++) {
