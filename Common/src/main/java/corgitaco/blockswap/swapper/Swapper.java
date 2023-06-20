@@ -29,9 +29,7 @@ public class Swapper {
     public static final Codec<FluidState> COMMENTED_FLUID_CODEC = codec(CodecUtil.FLUID_CODEC, Fluid::defaultFluidState);
 
     protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> object, Function<O, S> defaultVal) {
-        return object.dispatch("Name", (stateHolder) -> {
-            return ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner();
-        }, (o) -> {
+        return object.dispatch("Name", (stateHolder) -> ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner(), (o) -> {
             S stateProperty = defaultVal.apply(o);
             return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
         });

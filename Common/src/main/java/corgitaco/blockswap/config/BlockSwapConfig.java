@@ -124,11 +124,11 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
             String errorMessage = "";
 
             if (!blockSwapperErrors.isEmpty()) {
-                errorMessage = errorMessage + String.format("Detected circular BLOCK reference(s) in the \"swapper\"! Blocks being swapped cannot be used as a block to swap into. Circular references found:\n%s\n", blockSwapperErrors.toString());
+                errorMessage = errorMessage + String.format("Detected circular BLOCK reference(s) in the \"swapper\"! Blocks being swapped cannot be used as a block to swap into. Circular references found:\n%s\n", blockSwapperErrors);
             }
 
             if (!stateSwapperErrors.isEmpty()) {
-                errorMessage = errorMessage + String.format("Detected circular BLOCKSTATE reference(s) in the \"state_swapper\"! BlockStates being swapped cannot be used as a BlockState to swap into. Circular references found:\n%s", stateSwapperErrors.toString());
+                errorMessage = errorMessage + String.format("Detected circular BLOCKSTATE reference(s) in the \"state_swapper\"! BlockStates being swapped cannot be used as a BlockState to swap into. Circular references found:\n%s", stateSwapperErrors);
             }
 
             if (!errorMessage.isEmpty()) {
