@@ -1,11 +1,10 @@
+import com.modrinth.minotaur.TaskModrinthUpload
+
 import java.util.stream.Collectors
 
 buildscript {
     repositories {
         maven { url = 'https://maven.parchmentmc.org' }
-    }
-    dependencies {
-        classpath group: 'gradle.plugin.com.modrinth.minotaur', name: 'Minotaur', version: '1.2.1'
     }
 }
 
@@ -16,6 +15,7 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id "net.darkhax.curseforgegradle" version "1.1.15"
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 tasks.build.dependsOn(shadowJar)
@@ -146,10 +146,11 @@ task fabric_checkForRefmap() {
     }
 }
 
+String changelogText = projectDir.toPath().getParent().resolve("CHANGELOG.md").getText('UTF-8')
+
 task fabric_publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurseForge) {
     apiToken = "$System.env.CURSEFORGE_KEY"
     int projectId = 552471
-    String changelogText = projectDir.toPath().getParent().resolve("CHANGELOG.md").getText('UTF-8')
 
     def mainFile = upload(projectId, remapJar)
     mainFile.changelog = changelogText
@@ -158,13 +159,26 @@ task fabric_publishCurseForge(type: net.darkhax.curseforgegradle.TaskPublishCurs
     mainFile.addGameVersion("${project.minecraft_version}")
     mainFile.addModLoader("fabric")
 }
+task fabric_publishModrinth(type: TaskModrinthUpload) {
+    modrinth {
+        token = "$System.env.MODRINTH_KEY"
+        projectId = 'f9kXyjJX'
+        versionName = "${archivesBaseName}-${project.version}"
+        versionNumber = project.version
+        versionType = "${project.release_type}"
+        uploadFile = remapJar
+        changelog = changelogText
+        gameVersions = ["${project.minecraft_version}"]
+        loaders = ['fabric']
+    }
+}
+
 
 task fabric_buildAndReleaseCurseforge {}
 tasks.fabric_checkForRefmap.mustRunAfter tasks.build
 tasks.fabric_publishCurseForge.mustRunAfter tasks.fabric_checkForRefmap
 tasks.fabric_buildAndReleaseCurseforge.dependsOn(tasks.build, tasks.fabric_checkForRefmap, tasks.fabric_publishCurseForge)
 
-apply from: 'gradle/modrinth.gradle'
 task fabric_buildAndReleaseModrinth {}
 tasks.fabric_checkForRefmap.mustRunAfter tasks.build
 tasks.fabric_publishModrinth.mustRunAfter tasks.fabric_checkForRefmap
