@@ -69,7 +69,7 @@ public class Swapper {
             if (!((TickHelper) chunk).markTickDirty()) {
                 for (LevelChunkSection section : sections) {
                     if (section != null) {
-                        int bottomY = section.bottomBlockY();
+                        int bottomY = chunk.getLevel().dimensionType().minY();
                         for (int x = 0; x < 16; x++) {
                             for (int y = 0; y < 16; y++) {
                                 for (int z = 0; z < 16; z++) {
