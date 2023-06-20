@@ -143,7 +143,8 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
             }
 
             if (!errorMessage.isEmpty()) {
-                return DataResult.error(errorMessage);
+                String finalErrorMessage = errorMessage;
+                return DataResult.error(() -> finalErrorMessage);
             }
 
             return DataResult.success(blockSwapConfig);

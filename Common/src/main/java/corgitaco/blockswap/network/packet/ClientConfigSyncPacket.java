@@ -13,11 +13,11 @@ public class ClientConfigSyncPacket implements PacketHandle {
     }
 
     public static void writeToPacket(ClientConfigSyncPacket packet, FriendlyByteBuf buf) {
-        buf.writeWithCodec(BlockSwapConfig.CODEC, packet.blockSwapConfig);
+        buf.writeJsonWithCodec(BlockSwapConfig.CODEC, packet.blockSwapConfig);
     }
 
     public static ClientConfigSyncPacket readFromPacket(FriendlyByteBuf buf) {
-        return new ClientConfigSyncPacket(buf.readWithCodec(BlockSwapConfig.CODEC));
+        return new ClientConfigSyncPacket(buf.readJsonWithCodec(BlockSwapConfig.CODEC));
     }
 
     @Override
