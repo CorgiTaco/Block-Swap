@@ -1,5 +1,18 @@
+# 5.0.0.2
+* Depend on CorgiLib
+* Move Codecs/Serializers to CorgiLib
+* 
+# 5.0.0.1
+* Fix Retrogen
+* 
 # 5.0.0.0
 * Port to 1.20
+* 
+# 4.0.0.2
+* Depend on CorgiLib
+* Move Codecs/Serializers to CorgiLib
+
+# 4.0.0.1
 * Fix Retrogen
 
 # 4.0.0.0
