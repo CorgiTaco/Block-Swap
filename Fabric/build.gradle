@@ -61,6 +61,7 @@ dependencies {
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
     implementation project(":Common")
     shadow("blue.endless:jankson:${jankson_version}")
+    modImplementation("maven.modrinth:corgilib:${minecraft_version}-${corgilib_version}-fabric")
 }
 
 loom {
