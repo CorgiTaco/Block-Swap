@@ -26,3 +26,10 @@ Simply replaces one block with another.
     versionRange="[1.19,)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.blockswap]]
+modId = "corgilib"
+mandatory = true
+versionRange = "[1.0.0.34,)"
+ordering = "BEFORE"
+side = "BOTH"

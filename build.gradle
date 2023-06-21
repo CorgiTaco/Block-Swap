@@ -35,6 +35,13 @@ subprojects {
             url = 'https://repo.spongepowered.org/repository/maven-public/'
         }
         maven { url = 'https://maven.minecraftforge.net' }
+        maven {
+            name = "Modrinth"
+            url = "https://api.modrinth.com/maven"
+            content {
+                includeGroup "maven.modrinth"
+            }
+        }
     }
 
 

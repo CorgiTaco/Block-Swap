@@ -27,6 +27,7 @@ dependencies {
     compileOnly("com.google.code.findbugs:jsr305:3.0.2")
     compileOnly("org.ow2.asm:asm-tree:9.5")
     compileOnly("blue.endless:jankson:${jankson_version}")
+    compileOnly("maven.modrinth:corgilib:1.19.4-${corgilib_version}-forge")
 }
 
 processResources {
