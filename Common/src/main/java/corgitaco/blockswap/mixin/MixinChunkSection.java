@@ -1,6 +1,5 @@
 package corgitaco.blockswap.mixin;
 
-import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.swapper.Swapper;
 import net.minecraft.world.level.block.state.BlockState;

@@ -1,3 +1,7 @@
+# 4.0.0.2
+* Depend on CorgiLib
+* Move Codecs/Serializers to CorgiLib
+
 # 4.0.0.1
 * Fix Retrogen
 

@@ -1,6 +1,8 @@
 package corgitaco.blockswap.swapper;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.mixin.access.StateHolderAccess;
 import corgitaco.blockswap.util.TickHelper;
@@ -19,6 +21,10 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Swapper {
@@ -30,6 +36,23 @@ public class Swapper {
             return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
         });
     }
+
+    public static Codec<Pair<BlockState, BlockState>> PAIR_STATE_CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            COMMENTED_STATE_CODEC.fieldOf("old").forGetter(Pair::getFirst),
+            COMMENTED_STATE_CODEC.fieldOf("new").forGetter(Pair::getSecond)
+    ).apply(builder, Pair::new));
+
+    public static Codec<Map<BlockState, BlockState>> KEYABLE_BLOCKSTATE_CODEC = PAIR_STATE_CODEC.listOf().xmap(s -> {
+        Map<BlockState, BlockState> map = new IdentityHashMap<>();
+        for (Pair<BlockState, BlockState> blockStateBlockStatePair : s) {
+            map.put(blockStateBlockStatePair.getFirst(), blockStateBlockStatePair.getSecond());
+        }
+        return map;
+    }, map -> {
+        List<Pair<BlockState, BlockState>> pairs = new ArrayList<>();
+        map.forEach((state, state2) -> pairs.add(new Pair<>(state, state2)));
+        return pairs;
+    });
 
     public static Reference2ReferenceOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> cache = new Reference2ReferenceOpenHashMap<>();
 

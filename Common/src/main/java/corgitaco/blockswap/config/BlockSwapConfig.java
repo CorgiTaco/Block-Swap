@@ -1,6 +1,5 @@
 package corgitaco.blockswap.config;
 
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -99,7 +98,7 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
     private static final Codec<BlockSwapConfig> RAW_CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     CommentedCodec.of(Codec.unboundedMap(CodecUtil.BLOCK_CODEC, CodecUtil.BLOCK_CODEC), "swapper", "A map of blocks that specifies what the \"old\" block is and what its \"new\" block is.\nExample:\n" + SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockBlockMap),
-                    CommentedCodec.of(CodecUtil.KEYABLE_BLOCKSTATE_CODEC, "state_swapper", "A map of states that specifies what the \"old\" block state is and what its \"new\" block state is.\nSee \"known_states\" folder(\"generate_all_known_states\" must be set to true in this config) to see all known block states available for all blocks available in the registry.\nExample:\n" + STATE_SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockStateBlockStateMap),
+                    CommentedCodec.of(Swapper.KEYABLE_BLOCKSTATE_CODEC, "state_swapper", "A map of states that specifies what the \"old\" block state is and what its \"new\" block state is.\nSee \"known_states\" folder(\"generate_all_known_states\" must be set to true in this config) to see all known block states available for all blocks available in the registry.\nExample:\n" + STATE_SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockStateBlockStateMap),
                     CommentedCodec.of(Codec.BOOL, "retro_gen", "Whether blocks are replaced in existing chunks.").forGetter(BlockSwapConfig::retroGen),
                     CommentedCodec.of(Codec.BOOL, "generate_all_known_states", "Generates all block states for all blocks in the registry.").forGetter(BlockSwapConfig::generateAllKnownStates)
             ).apply(builder, BlockSwapConfig::new)
