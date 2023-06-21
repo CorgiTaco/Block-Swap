@@ -1,18 +1,16 @@
 package corgitaco.blockswap.config;
 
-import blue.endless.jankson.api.SyntaxError;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.BlockSwap;
-import corgitaco.blockswap.util.CodecUtil;
-import corgitaco.blockswap.util.CommentedCodec;
-import corgitaco.blockswap.util.jankson.JanksonJsonOps;
-import corgitaco.blockswap.util.jankson.JanksonUtil;
+import corgitaco.corgilib.serialization.codec.CodecUtil;
+import corgitaco.corgilib.serialization.codec.CommentedCodec;
+import corgitaco.corgilib.serialization.jankson.JanksonJsonOps;
+import corgitaco.corgilib.serialization.jankson.JanksonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.world.level.block.Block;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -44,19 +42,15 @@ public record MissingBlockIDsConfig(Map<String, Block> idRemapper) {
         if (CONFIG == null || reload) {
             Path path = BlockSwap.CONFIG_PATH.resolve("missing_block_ids.json5");
             File configFile = path.toFile();
-            try {
-                if (!configFile.exists()) {
-                    JanksonUtil.createConfig(path, MissingBlockIDsConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, new MissingBlockIDsConfig(new IdentityHashMap<>()));
-                }
-
-                if (genempty && !configFile.exists()) {
-                    JanksonUtil.createConfig(path, MissingBlockIDsConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, new MissingBlockIDsConfig(new IdentityHashMap<>()));
-                    return null;
-                }
-                CONFIG = JanksonUtil.readConfig(path, MissingBlockIDsConfig.CODEC, JanksonJsonOps.INSTANCE);
-            } catch (IOException | SyntaxError e) {
-                e.printStackTrace();
+            if (!configFile.exists()) {
+                JanksonUtil.createConfig(path, MissingBlockIDsConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, new MissingBlockIDsConfig(new IdentityHashMap<>()));
             }
+
+            if (genempty && !configFile.exists()) {
+                JanksonUtil.createConfig(path, MissingBlockIDsConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, new MissingBlockIDsConfig(new IdentityHashMap<>()));
+                return null;
+            }
+            CONFIG = JanksonUtil.readConfig(path, MissingBlockIDsConfig.CODEC, JanksonJsonOps.INSTANCE);
         }
         return CONFIG;
     }
