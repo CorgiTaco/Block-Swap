@@ -1,7 +1,6 @@
 package corgitaco.blockswap.swapper;
 
 import com.mojang.serialization.Codec;
-import corgitaco.blockswap.BlockSwap;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.mixin.access.StateHolderAccess;
 import corgitaco.blockswap.util.CodecUtil;
@@ -63,10 +62,12 @@ public class Swapper {
         }
     }
 
-    public static void runRetroGenerator(Level world, LevelChunkSection[] sections, LevelChunk chunk) {
+    public static void runRetroGenerator(LevelChunk chunk) {
         BlockSwapConfig config = BlockSwapConfig.getConfig(false);
         if (config.retroGen()) {
             if (!((TickHelper) chunk).markTickDirty()) {
+                Level world = chunk.getLevel();
+                LevelChunkSection[] sections = chunk.getSections();
                 for (int i = 0; i < sections.length; i++) {
                     LevelChunkSection section = sections[i];
                     if (section != null) {
