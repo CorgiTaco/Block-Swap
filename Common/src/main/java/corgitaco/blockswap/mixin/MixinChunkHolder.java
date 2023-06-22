@@ -13,6 +13,6 @@ public class MixinChunkHolder {
 
     @Inject(method = "broadcastChanges", at = @At("HEAD"))
     private void runChunkUpdates(LevelChunk chunk, CallbackInfo ci) {
-        Swapper.runRetroGenerator(chunk.getLevel(), chunk.getSections(), chunk);
+        Swapper.runRetroGenerator(chunk);
     }
 }
