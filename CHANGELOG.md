@@ -8,6 +8,13 @@
 # 4.0.0.0
 * Port to 1.19.4
 
+# 3.0.0.2
+* Depend on CorgiLib
+* Move Codecs/Serializers to CorgiLib
+
+# 3.0.0.1
+* Fix Retrogen
+
 # 3.0.0.0
 * Port to 1.19.3
 
