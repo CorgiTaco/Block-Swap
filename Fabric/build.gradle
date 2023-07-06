@@ -9,7 +9,7 @@ buildscript {
 }
 
 plugins {
-    id 'fabric-loom' version '1.2-SNAPSHOT'
+    id 'fabric-loom' version '1.3-SNAPSHOT'
     id 'maven-publish'
     id 'idea'
     id 'java'
@@ -26,7 +26,6 @@ configurations {
 }
 shadowJar {
     configurations = [project.configurations.shadow]
-    relocate 'blue.endless.jankson', "${project.group}.shadow.blue.endless.jankson"
 }
 
 archivesBaseName = "${mod_name}-fabric-${minecraft_version}"

@@ -47,7 +47,6 @@ archivesBaseName = "${mod_name}-forge-${minecraft_version}"
 
 shadowJar {
     configurations = [project.configurations.shadow]
-    relocate 'blue.endless.jankson', "${project.group}.shadow.blue.endless.jankson"
     archiveClassifier = ''
 }
 reobf {
