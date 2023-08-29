@@ -1,11 +1,13 @@
 package corgitaco.blockswap.swapper;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.config.BlockSwapConfig;
 import corgitaco.blockswap.mixin.access.StateHolderAccess;
-import corgitaco.blockswap.util.CodecUtil;
-import corgitaco.blockswap.util.CommentedCodec;
 import corgitaco.blockswap.util.TickHelper;
+import corgitaco.corgilib.serialization.codec.CodecUtil;
+import corgitaco.corgilib.serialization.codec.CommentedCodec;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.Util;
@@ -18,14 +20,15 @@ import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.FluidState;
 
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Swapper {
     public static final Codec<BlockState> COMMENTED_STATE_CODEC = codec(CodecUtil.BLOCK_CODEC, Block::defaultBlockState);
-    public static final Codec<FluidState> COMMENTED_FLUID_CODEC = codec(CodecUtil.FLUID_CODEC, Fluid::defaultFluidState);
 
     protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> object, Function<O, S> defaultVal) {
         return object.dispatch("Name", (stateHolder) -> ((StateHolderAccess<O, S>) stateHolder).blockSwap_GetOwner(), (o) -> {
@@ -33,6 +36,23 @@ public class Swapper {
             return stateProperty.getValues().isEmpty() ? Codec.unit(stateProperty) : CommentedCodec.optionalOf(((StateHolderAccess<O, S>) stateProperty).blockSwap_getPropertiesCodec().codec(), "Properties", "Properties define the state of this block/fluid.", stateProperty).codec();
         });
     }
+
+    public static Codec<Pair<BlockState, BlockState>> PAIR_STATE_CODEC = RecordCodecBuilder.create(builder -> builder.group(
+            COMMENTED_STATE_CODEC.fieldOf("old").forGetter(Pair::getFirst),
+            COMMENTED_STATE_CODEC.fieldOf("new").forGetter(Pair::getSecond)
+    ).apply(builder, Pair::new));
+
+    public static Codec<Map<BlockState, BlockState>> KEYABLE_BLOCKSTATE_CODEC = PAIR_STATE_CODEC.listOf().xmap(s -> {
+        Map<BlockState, BlockState> map = new IdentityHashMap<>();
+        for (Pair<BlockState, BlockState> blockStateBlockStatePair : s) {
+            map.put(blockStateBlockStatePair.getFirst(), blockStateBlockStatePair.getSecond());
+        }
+        return map;
+    }, map -> {
+        List<Pair<BlockState, BlockState>> pairs = new ArrayList<>();
+        map.forEach((state, state2) -> pairs.add(new Pair<>(state, state2)));
+        return pairs;
+    });
 
     public static Reference2ReferenceOpenHashMap<Block, Int2ObjectOpenHashMap<Property<?>>> cache = new Reference2ReferenceOpenHashMap<>();
 

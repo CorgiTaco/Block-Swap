@@ -58,9 +58,9 @@ dependencies {
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
-    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
     implementation project(":Common")
-    shadow("blue.endless:jankson:${jankson_version}")
+    modImplementation("maven.modrinth:corgilib:${minecraft_version}-${corgilib_version}-fabric")
 }
 
 loom {

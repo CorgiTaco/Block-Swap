@@ -1,21 +1,20 @@
 package corgitaco.blockswap.config;
 
-import blue.endless.jankson.api.SyntaxError;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import corgitaco.blockswap.BlockSwap;
-import corgitaco.blockswap.util.CodecUtil;
-import corgitaco.blockswap.util.CommentedCodec;
-import corgitaco.blockswap.util.jankson.JanksonJsonOps;
-import corgitaco.blockswap.util.jankson.JanksonUtil;
+import corgitaco.blockswap.swapper.Swapper;
+import corgitaco.corgilib.serialization.codec.CodecUtil;
+import corgitaco.corgilib.serialization.codec.CommentedCodec;
+import corgitaco.corgilib.serialization.jankson.JanksonJsonOps;
+import corgitaco.corgilib.serialization.jankson.JanksonUtil;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -99,7 +98,7 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
     private static final Codec<BlockSwapConfig> RAW_CODEC = RecordCodecBuilder.create(builder ->
             builder.group(
                     CommentedCodec.of(Codec.unboundedMap(CodecUtil.BLOCK_CODEC, CodecUtil.BLOCK_CODEC), "swapper", "A map of blocks that specifies what the \"old\" block is and what its \"new\" block is.\nExample:\n" + SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockBlockMap),
-                    CommentedCodec.of(CodecUtil.KEYABLE_BLOCKSTATE_CODEC, "state_swapper", "A map of states that specifies what the \"old\" block state is and what its \"new\" block state is.\nSee \"known_states\" folder(\"generate_all_known_states\" must be set to true in this config) to see all known block states available for all blocks available in the registry.\nExample:\n" + STATE_SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockStateBlockStateMap),
+                    CommentedCodec.of(Swapper.KEYABLE_BLOCKSTATE_CODEC, "state_swapper", "A map of states that specifies what the \"old\" block state is and what its \"new\" block state is.\nSee \"known_states\" folder(\"generate_all_known_states\" must be set to true in this config) to see all known block states available for all blocks available in the registry.\nExample:\n" + STATE_SWAPPER_EXAMPLE).forGetter(BlockSwapConfig::blockStateBlockStateMap),
                     CommentedCodec.of(Codec.BOOL, "retro_gen", "Whether blocks are replaced in existing chunks.").forGetter(BlockSwapConfig::retroGen),
                     CommentedCodec.of(Codec.BOOL, "generate_all_known_states", "Generates all block states for all blocks in the registry.").forGetter(BlockSwapConfig::generateAllKnownStates)
             ).apply(builder, BlockSwapConfig::new)
@@ -160,14 +159,10 @@ public record BlockSwapConfig(Map<Block, Block> blockBlockMap, Map<BlockState, B
         if (CONFIG == null || reload) {
             Path path = BlockSwap.CONFIG_PATH.resolve("block_swap.json5");
             File configFile = path.toFile();
-            try {
-                if (!configFile.exists()) {
-                    JanksonUtil.createConfig(path, BlockSwapConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, BlockSwapConfig.DEFAULT);
-                }
-                CONFIG = JanksonUtil.readConfig(path, BlockSwapConfig.CODEC, JanksonJsonOps.INSTANCE);
-            } catch (IOException | SyntaxError e) {
-                e.printStackTrace();
+            if (!configFile.exists()) {
+                JanksonUtil.createConfig(path, BlockSwapConfig.CODEC, JanksonUtil.HEADER_CLOSED, new Object2ObjectOpenHashMap<>(), JanksonJsonOps.INSTANCE, BlockSwapConfig.DEFAULT);
             }
+            CONFIG = JanksonUtil.readConfig(path, BlockSwapConfig.CODEC, JanksonJsonOps.INSTANCE);
         }
         return CONFIG;
     }
