@@ -18,7 +18,7 @@ buildscript {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id "net.darkhax.curseforgegradle" version "1.1.15"
+    id "net.darkhax.curseforgegradle" version "1.1.16"
     id "com.modrinth.minotaur" version "2.+"
 }
 apply plugin: 'java'
@@ -47,7 +47,6 @@ archivesBaseName = "${mod_name}-forge-${minecraft_version}"
 
 shadowJar {
     configurations = [project.configurations.shadow]
-    relocate 'blue.endless.jankson', "${project.group}.shadow.blue.endless.jankson"
     archiveClassifier = ''
 }
 reobf {
@@ -73,8 +72,8 @@ minecraft {
             args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}_forge.mixins.json"
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'Client'
-            def output = sourceSets.main.output;
-            def commonOutput = project(":Common").sourceSets.main.output;
+            def output = sourceSets.main.output
+            def commonOutput = project(":Common").sourceSets.main.output
             environment("MOD_CLASSES", [output.classesDirs.asPath, output.resourcesDir.path, commonOutput.classesDirs.asPath, commonOutput.resourcesDir.path].join(";"))
 
             mods {
@@ -91,8 +90,8 @@ minecraft {
             args "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}_forge.mixins.json"
             ideaModule "${rootProject.name}.${project.name}.main"
             taskName 'Server'
-            def output = sourceSets.main.output;
-            def commonOutput = project(":Common").sourceSets.main.output;
+            def output = sourceSets.main.output
+            def commonOutput = project(":Common").sourceSets.main.output
             environment("MOD_CLASSES", [output.classesDirs.asPath, output.resourcesDir.path, commonOutput.classesDirs.asPath, commonOutput.resourcesDir.path].join(";"))
 
             mods {
@@ -109,8 +108,8 @@ minecraft {
             ideaModule "${rootProject.name}.${project.name}.main"
             args '--mod', mod_id, '--all', '--output', project(':Common').file('src/generated/resources'), '--existing', project(':Common').file('src/main/resources'), "-mixin.config=${mod_id}.mixins.json", "-mixin.config=${mod_id}_forge.mixins.json"
             taskName 'Data'
-            def output = sourceSets.main.output;
-            def commonOutput = project(":Common").sourceSets.main.output;
+            def output = sourceSets.main.output
+            def commonOutput = project(":Common").sourceSets.main.output
             environment("MOD_CLASSES", [output.classesDirs.asPath, output.resourcesDir.path, commonOutput.classesDirs.asPath, commonOutput.resourcesDir.path].join(";"))
 
             mods {
@@ -127,7 +126,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     compileOnly project(":Common")
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    library shadow("blue.endless:jankson:${jankson_version}")
+    implementation fg.deobf("maven.modrinth:corgilib:${minecraft_version}-${corgilib_version}-forge")
 }
 
 mixin {

@@ -7,6 +7,14 @@
   "authors": [
     "Corgi Taco"
   ],
+  "contributors": [
+    {
+      "name": "J.T. McQuigg (JT122406)",
+      "contact": {
+        "homepage": "https://github.com/JT122406"
+      }
+    }
+  ],
   "contact": {
     "sources": "https://github.com/CorgiTaco/Block-Swap/"
   },
@@ -26,7 +34,8 @@
     "fabricloader": ">=0.12",
     "fabric": "*",
     "minecraft": ">=1.19",
-    "java": ">=17"
+    "java": ">=17",
+    "corgilib": ">=1.0.0.34"
   },
   "suggests": {
     "another-mod": "*"
