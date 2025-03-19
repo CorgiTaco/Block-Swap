@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "dev.corgitaco.blockswap.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+  ],
+  "mixins": [
+    "LevelChunkSectionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixinextras": {
+    "minVersion": "0.4.1"
+  }
+}
