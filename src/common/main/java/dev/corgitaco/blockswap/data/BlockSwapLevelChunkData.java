@@ -42,4 +42,8 @@ public class BlockSwapLevelChunkData extends ServerLevelChunkTrackedData impleme
     public BlockState getNewState(BlockPos blockPos, BlockState blockState, BlockState blockState1, boolean b) {
         return blockStateMap.getOrDefault(blockState, blockState1);
     }
+
+    public Set<String> getPlaceHolders() {
+        return placeHolders;
+    }
 }
