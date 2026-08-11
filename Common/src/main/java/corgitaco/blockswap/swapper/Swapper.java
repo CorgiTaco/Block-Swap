@@ -15,6 +15,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -86,29 +87,47 @@ public class Swapper {
         BlockSwapConfig config = BlockSwapConfig.getConfig(false);
         if (config.retroGen()) {
             if (!((TickHelper) chunk).markTickDirty()) {
-                Level world = chunk.getLevel();
                 LevelChunkSection[] sections = chunk.getSections();
+                boolean chunkModified = false;
+
+                // Check if config targets Air
+                boolean configReplacesAir = config.blockBlockMap().containsKey(Blocks.AIR) 
+                                            || config.blockStateBlockStateMap().containsKey(Blocks.AIR.defaultBlockState());
+    
                 for (int i = 0; i < sections.length; i++) {
                     LevelChunkSection section = sections[i];
-                    if (section != null) {
-                        int bottomY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(i));
+
+                    // If exists and isn't only air unless the target itself is air - Skips a lot of unneeded cycles
+                    if (section != null && (!section.hasOnlyAir() || configReplacesAir)) {
                         for (int x = 0; x < 16; x++) {
                             for (int y = 0; y < 16; y++) {
                                 for (int z = 0; z < 16; z++) {
-                                    BlockPos blockPos = new BlockPos(SectionPos.sectionToBlockCoord(chunk.getPos().x) + x, bottomY + y, SectionPos.sectionToBlockCoord(chunk.getPos().z) + z);
-                                    BlockState state = world.getBlockState(blockPos);
+                                    // State directly from the local section array
+                                    BlockState state = section.getBlockState(x, y, z);
+    
+                                    BlockState newState = null;
+    
                                     if (config.blockBlockMap().containsKey(state.getBlock())) {
-                                        world.setBlock(blockPos, remapState(state), 2);
+                                        newState = remapState(state);
+                                    } else if (config.blockStateBlockStateMap().containsKey(state)) {
+                                        newState = config.blockStateBlockStateMap().get(state);
                                     }
-
-                                    if (config.blockStateBlockStateMap().containsKey(state)) {
-                                        world.setBlock(blockPos, config.blockStateBlockStateMap().get(state), 2);
+    
+                                    if (newState != null && newState != state) {
+                                        section.setBlockState(x, y, z, newState, false);
+                                        chunkModified = true;
                                     }
                                 }
                             }
                         }
                     }
                 }
+    
+                // Mark chunk as dirty so it saves the swap
+                if (chunkModified) {
+                    chunk.setUnsaved(true);
+                }
+    
                 ((TickHelper) chunk).setTickDirty();
             }
         }
